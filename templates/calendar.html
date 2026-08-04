@@ -108,10 +108,41 @@
     .toast.show{transform:translateY(0);opacity:1}.toast-success{background:var(--cyber-neon)}.toast-error{background:var(--cyber-pink)}
 
     @media(max-width:900px){
-      .app-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
-      .side-panel{flex-direction:row;flex-wrap:wrap;gap:6px;padding:8px;max-height:35vh;overflow-y:auto;border-left:none;border-top:1px solid var(--cyber-border)}
-      .side-section{flex:1;min-width:180px}.category-grid{grid-template-columns:repeat(2,1fr)}
+      .app-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding-bottom:58px}
+      .side-panel{flex-direction:column;gap:8px;padding:8px;max-height:none;overflow-y:visible;border-left:none;border-top:1px solid var(--cyber-border)}
+      .side-section{flex:1;min-width:100%}.category-grid{grid-template-columns:repeat(3,1fr)}
+      /* Collapsible sections */
+      .side-section h3{cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
+      .sec-arrow{transition:transform .2s}
+      .side-section.collapsed .sec-arrow{transform:rotate(-90deg)}
+      .side-section.collapsed .sec-body{display:none}
+      .side-section.collapsed .btn{display:none}
+      /* Mobile action bar */
+      .mobile-actions{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:1000;background:var(--cyber-bg);border-top:1px solid var(--cyber-border2);padding:6px 8px calc(6px + env(safe-area-inset-bottom));gap:6px;justify-content:center}
+      .mob-btn{flex:1;padding:10px 4px;border-radius:10px;border:1px solid var(--cyber-border2);background:var(--cyber-surface2);color:var(--cyber-neon);font-size:.68rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;min-height:44px}
+      .mob-btn:active{background:var(--cyber-glass-hover)}
+      /* Topbar compact */
+      .topbar{flex-wrap:wrap;padding:6px 10px}
+      .brand{font-size:.8rem}
+      .top-actions .btn{padding:6px 10px;min-height:40px}
+      .legend{order:3;width:100%;justify-content:center}
+      /* Calendar mobile */
+      .fc{font-size:.72rem!important}
+      .fc .fc-toolbar-title{font-size:.8rem!important}
+      .fc .fc-button{padding:5px 8px!important;font-size:.66rem!important;min-height:36px!important}
+      .fc .fc-daygrid-day-number{font-size:.68rem}
+      .fc .fc-event{font-size:.6rem!important;padding:1px 3px!important}
+      .fc .fc-view-harness{border-radius:10px!important}
+      /* Modals full width on mobile */
+      .modal{max-width:100%;border-radius:16px 16px 0 0;max-height:85vh;padding:18px}
+      .modal-overlay{align-items:flex-end;padding:0}
+      .btn-row .btn,.btn-row .btn-sm{padding:10px 14px;min-height:44px;font-size:.78rem}
+      .fg input,.fg select,.fg textarea{min-height:44px;font-size:.9rem}
+      .cat-chip{min-height:48px;display:flex;flex-direction:column;justify-content:center}
+      /* Toast above action bar */
+      .toast{bottom:70px;right:12px;left:12px;text-align:center}
     }
+    @media(min-width:901px){.mobile-actions{display:none}}
     /* ===== VIOLET PULSE THEME ===== */
     [data-theme="violet"]{
       --cyber-bg:#F9FBFF;--cyber-surface:rgba(255,255,255,.72);--cyber-surface2:rgba(255,255,255,.85);--cyber-text:#1E293B;--cyber-text2:#475569;--cyber-text3:#64748B;
@@ -145,14 +176,23 @@
   </div>
   <div class="main-content" id="calendar"></div>
   <div class="side-panel">
-    <div class="side-section"><h3>◈ COUNTDOWN</h3><div id="bdayList"><span style="font-size:.7rem;color:var(--cyber-text3)">Loading...</span></div>
+    <div class="side-section" id="bdaySection"><h3 onclick="toggleSection('bdaySection')">◈ COUNTDOWN <span class="sec-arrow">▾</span></h3><div class="sec-body" id="bdayList"><span style="font-size:.7rem;color:var(--cyber-text3)">Loading...</span></div>
       <button class="btn btn-pri btn-sm" onclick="openBdayAdd()" style="margin-top:6px;width:100%;justify-content:center">+ TAMBAH</button></div>
-    <div class="side-section"><h3>◈ TUGASAN</h3><div id="choreList"><span style="font-size:.7rem;color:var(--cyber-text3)">Loading...</span></div>
+    <div class="side-section" id="choreSection"><h3 onclick="toggleSection('choreSection')">◈ TUGASAN <span class="sec-arrow">▾</span></h3><div class="sec-body" id="choreList"><span style="font-size:.7rem;color:var(--cyber-text3)">Loading...</span></div>
       <form onsubmit="addChore(event)" style="display:flex;gap:5px;margin-top:6px">
         <input type="text" id="choreNew" placeholder="Tugasan baru..." style="flex:1;padding:6px 8px;border:1px solid var(--cyber-border);border-radius:6px;font-size:.74rem;font-family:inherit;background:var(--cyber-surface2);color:var(--cyber-text)">
         <button class="btn btn-pri btn-sm">+</button></form></div>
   </div>
 </div>
+
+<!-- Mobile quick action bar -->
+<div class="mobile-actions" id="mobileActions">
+  <button class="mob-btn" onclick="openEventModal(null)">📅 Acara</button>
+  <button class="mob-btn" onclick="openBdayAdd()">🎂 Hari Lahir</button>
+  <button class="mob-btn" onclick="document.getElementById('choreSection').scrollIntoView({behavior:'smooth'});document.getElementById('choreNew').focus()">📋 Tugasan</button>
+  <button class="mob-btn" id="mobSettingsBtn" style="display:none" onclick="openSettingsPanel()">🔧</button>
+</div>
+
 
 <div class="modal-overlay" id="eventModal"><div class="modal"><h3 id="modalTitle">◈ ACARA BARU</h3>
   <form onsubmit="saveEvent(event)"><input type="hidden" id="eventId">
@@ -199,15 +239,41 @@ var token=localStorage.getItem('token'),user=JSON.parse(localStorage.getItem('us
 if(!token||!user.id)window.location.href='/login';
 document.getElementById('myName').textContent=user.full_name||user.username;
 document.getElementById('myDot').style.background=user.color;document.getElementById('myDot').style.color=user.color;
-if(user.is_admin){document.getElementById('adminLink').style.display='inline-flex';document.getElementById('settingsBtn').style.display='inline-flex'}
+if(user.is_admin){document.getElementById('adminLink').style.display='inline-flex';document.getElementById('settingsBtn').style.display='inline-flex';document.getElementById('mobSettingsBtn').style.display='inline-flex'}
 function logout(){localStorage.clear();window.location.href='/login'}
+
+// Collapsible side sections (mobile friendly)
+function toggleSection(id){
+  var sec=document.getElementById(id);
+  if(sec)sec.classList.toggle('collapsed');
+}
+// Auto-collapse side sections on small screens
+if(window.innerWidth<=900){
+  setTimeout(function(){
+    ['bdaySection','choreSection'].forEach(function(id){
+      var s=document.getElementById(id);if(s)s.classList.add('collapsed');
+    });
+  },500);
+}
 
 async function api(url,opts){if(!opts)opts={};if(!opts.headers)opts.headers={};opts.headers['Authorization']='Bearer '+token;if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})})}
 
 var calendar;
 document.addEventListener('DOMContentLoaded',function(){
   loadSettings();loadAll();
-  calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{initialView:'dayGridMonth',headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek'},height:'100%',locale:'ms',firstDay:1,selectable:true,editable:true,eventDurationEditable:false,events:fetchEvents,select:function(info){openEventModal(null,info.startStr,info.endStr||info.startStr)},eventClick:function(info){if(info.event.extendedProps.category==='cuti'){toast(info.event.title,'success');return}openEventModal(info.event)},eventDrop:function(info){updateFromDrop(info.event)},eventResize:function(info){updateFromDrop(info.event)},eventClassNames:function(arg){return arg.event.extendedProps.category==='cuti'?['holiday-event']:[]}});
+  var isMobile=window.innerWidth<=900;
+  var toolbarRight=isMobile?'listMonth,dayGridMonth':'dayGridMonth,timeGridWeek';
+  calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
+    initialView:isMobile?'listMonth':'dayGridMonth',
+    headerToolbar:{left:'prev,next today',center:'title',right:toolbarRight},
+    height:isMobile?'auto':'100%',locale:'ms',firstDay:1,selectable:true,editable:true,
+    eventDurationEditable:false,events:fetchEvents,
+    select:function(info){openEventModal(null,info.startStr,info.endStr||info.startStr)},
+    eventClick:function(info){if(info.event.extendedProps.category==='cuti'){toast(info.event.title,'success');return}openEventModal(info.event)},
+    eventDrop:function(info){updateFromDrop(info.event)},
+    eventResize:function(info){updateFromDrop(info.event)},
+    eventClassNames:function(arg){return arg.event.extendedProps.category==='cuti'?['holiday-event']:[]}
+  });
   calendar.render();renderCatGrid('biru');
 });
 
