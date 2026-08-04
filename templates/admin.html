@@ -1,455 +1,221 @@
 <!DOCTYPE html>
-<html lang="ms" data-theme="system">
+<html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel — Family Calendar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>ADMIN — Family Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* ===== THEME SYSTEM ===== */
-    :root,[data-theme="light"]{
-      --green:#22C55E;--gdark:#16A34A;--red:#EF4444;--text:#1E293B;--muted:#64748B;--bg:#F8FAFC;--card:#fff;--card-glass:rgba(255,255,255,.75);
-      --border:#E2E8F0;--border-glass:rgba(226,232,240,.6);--shadow:0 1px 3px rgba(0,0,0,.04);--radius:10px
+    :root{
+      --cyber-bg:#0b0f19;--cyber-surface:rgba(255,255,255,.03);--cyber-surface2:rgba(255,255,255,.06);--cyber-text:#e0f7fa;--cyber-text2:#80deea;--cyber-text3:#4dd0e1;
+      --cyber-neon:#00f3ff;--cyber-pink:#ff0080;--cyber-purple:#7928ca;--cyber-gold:#ffb300;--cyber-green:#00e676;--cyber-red:#ff1744;
+      --cyber-border:rgba(0,243,255,.15);--cyber-border2:rgba(0,243,255,.25);--cyber-glass:rgba(255,255,255,.03);--cyber-glass-hover:rgba(0,243,255,.08);
+      --glow:0 0 15px rgba(0,243,255,.12);--glow2:0 0 25px rgba(255,0,128,.15);--glow3:0 0 10px rgba(0,243,255,.25);
+      --radius:10px;--blur:10px;
     }
-    [data-theme="dark"]{
-      --green:#34D399;--gdark:#22C55E;--red:#F87171;--text:#E2E8F0;--muted:#64748B;--bg:#0F172A;--card:#1E293B;--card-glass:rgba(30,41,59,.8);
-      --border:#334155;--border-glass:rgba(51,65,85,.6);--shadow:0 1px 3px rgba(0,0,0,.3);
-    }
-    @media(prefers-color-scheme:dark){[data-theme="system"]{
-      --green:#34D399;--gdark:#22C55E;--red:#F87171;--text:#E2E8F0;--muted:#64748B;--bg:#0F172A;--card:#1E293B;--card-glass:rgba(30,41,59,.8);
-      --border:#334155;--border-glass:rgba(51,65,85,.6);--shadow:0 1px 3px rgba(0,0,0,.3);
-    }}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border)}
-    .brand{font-size:1.1rem;font-weight:800}
-    .btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .12s}
-    .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--gdark)}
-    .btn-out{background:var(--card);color:var(--text);border-color:var(--border)}.btn-out:hover{background:#F1F5F9}
-    .btn-red{background:var(--red);color:#fff}.btn-warn{background:#F59E0B;color:#fff}
-    .container{max-width:900px;margin:0 auto;padding:20px}
-    .card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.03);margin-bottom:16px;border:1px solid var(--border)}
-    .card h3{font-size:.95rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    body{font-family:'Inter',sans-serif;background:var(--cyber-bg);color:var(--cyber-text);min-height:100vh}
+    h1,h2,h3{font-family:'Orbitron',sans-serif;letter-spacing:1px}
+    .noise-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.015;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:256px 256px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--cyber-glass);backdrop-filter:blur(var(--blur));border-bottom:1px solid var(--cyber-border);position:relative;z-index:1}
+    .brand{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:800;color:var(--cyber-neon);text-transform:uppercase;letter-spacing:3px}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.78rem;cursor:pointer;border:1px solid transparent;font-family:'Inter',sans-serif;text-decoration:none;transition:all .12s;text-transform:uppercase;letter-spacing:1px}
+    .btn-pri{background:rgba(0,243,255,.1);color:var(--cyber-neon);border-color:var(--cyber-border2);box-shadow:var(--glow3)}.btn-pri:hover{background:rgba(0,243,255,.2);box-shadow:0 0 20px rgba(0,243,255,.4)}
+    .btn-out{background:transparent;color:var(--cyber-text2);border-color:var(--cyber-border)}.btn-out:hover{background:var(--cyber-glass-hover);border-color:var(--cyber-neon)}
+    .btn-red{background:rgba(255,23,68,.1);color:var(--cyber-red);border-color:rgba(255,23,68,.25)}.btn-red:hover{background:rgba(255,23,68,.2)}
+    .btn-warn{background:rgba(255,179,0,.1);color:var(--cyber-gold);border-color:rgba(255,179,0,.25)}.btn-warn:hover{background:rgba(255,179,0,.2)}
+
+    .container{max-width:900px;margin:0 auto;padding:20px;position:relative;z-index:1}
+    .card{background:var(--cyber-glass);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));border-radius:var(--radius);padding:22px;box-shadow:var(--glow);margin-bottom:16px;border:1px solid var(--cyber-border);transition:all .2s}
+    .card:hover{border-color:var(--cyber-border2);box-shadow:0 0 25px rgba(0,243,255,.18)}
+    .card h3{font-size:.9rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--cyber-neon);text-transform:uppercase;letter-spacing:2px}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .fg{display:flex;flex-direction:column;gap:3px}
-    .fg label{font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
-    .fg input,.fg select,.fg textarea{padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.84rem;font-family:inherit;background:var(--card)}
-    .fg input:focus,.fg select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+    .fg label{font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--cyber-text2);font-family:'Orbitron',sans-serif}
+    .fg input,.fg select,.fg textarea{padding:9px 12px;border:1px solid var(--cyber-border);border-radius:8px;font-size:.82rem;font-family:inherit;background:var(--cyber-surface2);color:var(--cyber-text);transition:border .15s}
+    .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--cyber-neon);box-shadow:0 0 10px rgba(0,243,255,.15)}
     .fg textarea{resize:vertical;min-height:55px}
-    .hint{font-size:.68rem;color:var(--muted);margin-top:2px}
+    .hint{font-size:.64rem;color:var(--cyber-text3);margin-top:2px}
     .toggle-wrap{display:flex;align-items:center;gap:10px}
-    .toggle{position:relative;width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;transition:background .15s}
-    .toggle.on{background:var(--green)}
-    .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .15s}
+    .toggle{position:relative;width:44px;height:24px;background:var(--cyber-border);border-radius:12px;cursor:pointer;transition:background .15s;border:1px solid var(--cyber-border2)}
+    .toggle.on{background:var(--cyber-neon);box-shadow:0 0 10px rgba(0,243,255,.5)}
+    .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#0b0f19;border-radius:50%;transition:transform .15s;border:1px solid var(--cyber-neon)}
     .toggle.on::after{transform:translateX(20px)}
-    table{width:100%;border-collapse:collapse;font-size:.82rem}
-    th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
-    th{font-weight:600;background:var(--bg);font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;font-size:.8rem}
+    th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--cyber-border)}
+    th{font-weight:600;background:var(--cyber-surface2);font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--cyber-neon);font-family:'Orbitron',sans-serif}
     .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
-    .badge{font-size:.65rem;padding:2px 8px;border-radius:20px;font-weight:600}
-    .badge-admin{background:#FEF3C7;color:#92400E}.badge-user{background:#DCFCE7;color:#166534}
-    .zone-option{background:var(--bg);border-radius:var(--radius);padding:16px;border:2px solid var(--border);cursor:pointer;transition:all .12s;text-align:center}
-    .zone-option:hover{border-color:var(--muted)}
-    .zone-option.active{border-color:var(--green);background:#F0FDF4}
-    .zone-option .zone-label{font-weight:700;font-size:1.1rem}
-    .zone-option .zone-desc{font-size:.72rem;color:var(--muted)}
-    .zone-option .zone-states{font-size:.7rem;color:var(--muted);margin-top:4px}
+    .badge{font-size:.6rem;padding:2px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+    .badge-admin{background:rgba(255,179,0,.15);color:var(--cyber-gold);border:1px solid rgba(255,179,0,.3)}
+    .badge-user{background:rgba(0,243,255,.1);color:var(--cyber-text2);border:1px solid var(--cyber-border)}
+    .zone-option{background:var(--cyber-surface2);border-radius:var(--radius);padding:16px;border:1px solid var(--cyber-border);cursor:pointer;transition:all .12s;text-align:center}
+    .zone-option:hover{border-color:var(--cyber-border2)}.zone-option.active{border-color:var(--cyber-neon);box-shadow:0 0 15px rgba(0,243,255,.2)}
+    .zone-option .zone-label{font-family:'Orbitron',sans-serif;font-weight:700;font-size:1.1rem;color:var(--cyber-neon)}
+    .zone-option .zone-desc{font-size:.68rem;color:var(--cyber-text2)}.zone-option .zone-states{font-size:.64rem;color:var(--cyber-text3);margin-top:4px}
     .zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .bg-preview{height:80px;border-radius:8px;margin-top:4px;border:1px solid var(--border);position:relative;overflow:hidden}
-    .bg-preview.default{background:linear-gradient(135deg,#1A1423,#2D1B3E,#1E3A5F,#0F172A)}
-    .bg-preview.green{background:linear-gradient(135deg,#064E3B,#065F46,#047857,#064E3B)}
-    .bg-preview.blue{background:linear-gradient(135deg,#1E3A5F,#1E40AF,#1D4ED8,#0F172A)}
-    .bg-preview.sunset{background:linear-gradient(135deg,#7C2D12,#9A3412,#C2410C,#431407)}
+    .bg-preview{height:80px;border-radius:8px;margin-top:4px;border:1px solid var(--cyber-border)}
     .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .bg-chip{cursor:pointer;text-align:center;padding:8px;border-radius:8px;border:2px solid var(--border);transition:all .12s;font-size:.72rem;font-weight:600}
-    .bg-chip:hover{border-color:var(--muted)}
-    .bg-chip.active{border-color:var(--green);background:#F0FDF4}
+    .bg-chip{cursor:pointer;text-align:center;padding:6px;border-radius:8px;border:1px solid var(--cyber-border);transition:all .12s;font-size:.68rem;font-weight:600;color:var(--cyber-text2)}
+    .bg-chip:hover{border-color:var(--cyber-border2)}.bg-chip.active{border-color:var(--cyber-neon);box-shadow:0 0 10px rgba(0,243,255,.2)}
     .icon-grid{display:flex;gap:8px;flex-wrap:wrap}
-    .icon-chip{width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all .12s;background:var(--bg)}
-    .icon-chip:hover{border-color:var(--muted);transform:scale(1.05)}
-    .icon-chip.active{border-color:var(--green);background:#F0FDF4}
-    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:16px}
+    .icon-chip{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;border-radius:10px;border:1px solid var(--cyber-border);cursor:pointer;transition:all .12s;background:var(--cyber-surface2)}
+    .icon-chip:hover{border-color:var(--cyber-border2);transform:scale(1.05)}.icon-chip.active{border-color:var(--cyber-neon);box-shadow:0 0 10px rgba(0,243,255,.3)}
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px}
     .modal-overlay.show{display:flex}
-    .modal{background:var(--card);border-radius:14px;padding:24px;max-width:400px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.15)}
-    .modal h3{font-size:.95rem;margin-bottom:14px}
+    .modal{background:var(--cyber-bg);border-radius:14px;padding:24px;max-width:400px;width:100%;box-shadow:0 0 40px rgba(0,243,255,.2);border:1px solid var(--cyber-border2)}
+    .modal h3{font-family:'Orbitron',sans-serif;font-size:.9rem;margin-bottom:14px;color:var(--cyber-neon)}
     .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
-    .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.82rem;transform:translateY(100px);opacity:0;transition:all .3s}
-    .toast.show{transform:translateY(0);opacity:1}
-    .toast-success{background:#059669}.toast-error{background:var(--red)}
+    .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#000;font-weight:600;font-size:.78rem;transform:translateY(100px);opacity:0;transition:all .3s}
+    .toast.show{transform:translateY(0);opacity:1}.toast-success{background:var(--cyber-neon)}.toast-error{background:var(--cyber-pink)}
     @media(max-width:600px){.form-grid,.zone-grid,.bg-grid{grid-template-columns:1fr}}
-    /* Theme toggle */
-    .theme-btns{display:flex;gap:2px;background:var(--bg);padding:2px;border-radius:8px;border:1px solid var(--border)}
-    .theme-btn{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--muted);transition:all .12s}
-    .theme-btn:hover{background:var(--card)}.theme-btn.active{background:var(--card);color:var(--text)}
-    /* Glass cards */
-    .card{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   </style>
 </head>
 <body>
+<div class="noise-overlay"></div>
 <div class="topbar">
-  <div class="brand">⚙️ Admin Panel</div>
+  <div class="brand">◆ ADMIN</div>
   <div style="display:flex;gap:8px;align-items:center">
-    <div class="theme-btns" id="themeBtns">
-      <button class="theme-btn" title="Sistem" onclick="setTheme('system')">💻</button>
-      <button class="theme-btn" title="Terang" onclick="setTheme('light')">☀️</button>
-      <button class="theme-btn" title="Gelap" onclick="setTheme('dark')">🌙</button>
-    </div>
-    <a href="/" class="btn btn-out">📅 Calendar</a>
-    <a href="#" class="btn btn-out" onclick="logout()">🚪 Keluar</a>
+    <a href="/" class="btn btn-out">CALENDAR</a>
+    <a href="#" class="btn btn-out" onclick="logout()">KELUAR</a>
   </div>
 </div>
-
 <div class="container">
-  <!-- FAMILY + ZONE -->
-  <div class="card">
-    <h3>🏠 Identiti Keluarga</h3>
+  <div class="card"><h3>◆ IDENTITI KELUARGA</h3>
     <div class="form-grid">
       <div class="fg"><label>Nama Keluarga</label><input type="text" id="sFamilyName" placeholder="Keluarga Saya"><span class="hint">Dipapar di login & header</span></div>
-      <div class="fg"><label>Title Browser</label><input type="text" id="sBrandTitle" placeholder="Family Calendar"></div>
+      <div class="fg"><label>Title</label><input type="text" id="sBrandTitle" placeholder="Family Calendar"></div>
     </div>
     <div class="form-grid" style="margin-top:8px">
-      <div class="fg"><label>Default Password Ahli Baru</label><input type="text" id="sDefaultPass" value="member123"></div>
-      <div class="fg"><label>Pendaftaran Awam</label>
-        <div class="toggle-wrap"><div class="toggle" id="toggleRegister" onclick="toggleReg()"></div><span id="regLabel" style="font-size:.8rem">TUTUP</span></div>
-      </div>
+      <div class="fg"><label>Password Default</label><input type="text" id="sDefaultPass" value="member123"></div>
+      <div class="fg"><label>Daftar Awam</label><div class="toggle-wrap"><div class="toggle" id="toggleRegister" onclick="toggleReg()"></div><span id="regLabel" style="font-size:.76rem;color:var(--cyber-text2)">TUTUP</span></div></div>
     </div>
   </div>
 
-  <!-- WHATSAPP REMINDER -->
-  <div class="card">
-    <h3>📱 WhatsApp Bot — Reminder ke Group Keluarga</h3>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Hantar <strong>satu mesej</strong> ke WhatsApp group keluarga setiap pagi — senaraikan semua aktiviti ahli. Guna <strong>WhatsApp Cloud API (Meta)</strong>. Setup di <a href="https://developers.facebook.com" target="_blank" style="color:var(--green)">developers.facebook.com</a>.</p>
+  <div class="card"><h3>◆ WHATSAPP BOT</h3>
+    <p style="font-size:.72rem;color:var(--cyber-text3);margin-bottom:12px">Hantar satu mesej ke <strong style="color:var(--cyber-neon)">Group WhatsApp</strong> setiap pagi. Setup di <a href="https://developers.facebook.com" target="_blank" style="color:var(--cyber-neon)">Meta Developer</a>.</p>
     <div class="form-grid">
-      <div class="fg"><label>Aktifkan WhatsApp Bot</label>
-        <div class="toggle-wrap"><div class="toggle" id="toggleWA" onclick="toggleWA()"></div><span id="waLabel" style="font-size:.8rem">OFF</span></div>
-      </div>
-      <div class="fg"><label>Jam Hantar Reminder</label><input type="number" id="waReminderHour" value="7" min="0" max="23"><span class="hint">0-23. Default: 7 pagi</span></div>
-      <div class="fg full"><label>WhatsApp API Token (Permanent)</label><input type="text" id="waApiToken" placeholder="EAAx..."><span class="hint">Dari Meta Developer → WhatsApp → Setup → Permanent Token</span></div>
-      <div class="fg full"><label>🎯 WhatsApp Group ID</label><input type="text" id="waGroupId" placeholder="123456789@g.us"><span class="hint">PENTING! Format: 123456789@g.us. Buka web.whatsapp.com → group info → copy ID dari URL</span></div>
-      <div class="fg"><label>Phone Number ID #1 (Utama)</label><input type="text" id="waPhone1" placeholder="123456789..."><span class="hint">Nombor WhatsApp pengirim #1</span></div>
-      <div class="fg"><label>Phone Number ID #2 (Backup 1)</label><input type="text" id="waPhone2" placeholder="Kosongkan jika tiada"></div>
-      <div class="fg"><label>Phone Number ID #3 (Backup 2)</label><input type="text" id="waPhone3" placeholder="Kosongkan jika tiada"><span class="hint">Auto-failover jika #1/#2 gagal</span></div>
+      <div class="fg"><label>Bot Aktif</label><div class="toggle-wrap"><div class="toggle" id="toggleWA" onclick="toggleWA()"></div><span id="waLabel" style="font-size:.76rem;color:var(--cyber-pink)">OFF</span></div></div>
+      <div class="fg"><label>Jam Hantar</label><input type="number" id="waReminderHour" value="7" min="0" max="23"><span class="hint">Default: 7 pagi</span></div>
+      <div class="fg"><label>API Token</label><input type="text" id="waApiToken" placeholder="EAAx..."><span class="hint">Permanent Token dari Meta</span></div>
+      <div class="fg"><label>Group ID</label><input type="text" id="waGroupId" placeholder="123456789@g.us"><span class="hint">Dari web.whatsapp.com URL</span></div>
+      <div class="fg"><label>Phone ID #1</label><input type="text" id="waPhone1" placeholder="123..."></div>
+      <div class="fg"><label>Phone ID #2</label><input type="text" id="waPhone2" placeholder="Optional"></div>
+      <div class="fg"><label>Phone ID #3</label><input type="text" id="waPhone3" placeholder="Optional"></div>
     </div>
-    <div class="btn-row" style="justify-content:flex-start;gap:8px">
-      <button class="btn btn-pri btn-sm" onclick="testWhatsApp()">🧪 Test Hantar</button>
-      <button class="btn btn-warn btn-sm" onclick="triggerReminder()">📤 Hantar Reminder Sekarang</button>
+    <div class="btn-row" style="justify-content:flex-start;gap:8px;margin-top:8px">
+      <button class="btn btn-pri btn-sm" onclick="testWhatsApp()">TEST</button>
+      <button class="btn btn-warn btn-sm" onclick="triggerReminder()">HANTAR SEKARANG</button>
     </div>
   </div>
 
-  <!-- ZONE SELECTOR -->
-  <div class="card">
-    <h3>🗺️ Zon Kalendar</h3>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Pilih zon anda untuk cuti sekolah & negeri yang tepat. Tukar zon akan auto-refresh semua cuti.</p>
+  <div class="card"><h3>◆ ZON KALENDAR</h3>
+    <p style="font-size:.72rem;color:var(--cyber-text3);margin-bottom:12px">Pilih zon untuk cuti sekolah & negeri. Tukar zon = auto-refresh cuti.</p>
     <div class="zone-grid">
-      <div class="zone-option" id="zoneA" onclick="selectZone('A')">
-        <div class="zone-label">🅰️ Zon A</div>
-        <div class="zone-desc">Ahad = Hari pertama</div>
-        <div class="zone-states">Perlis, Kedah, Kelantan, Terengganu, Johor</div>
-      </div>
-      <div class="zone-option" id="zoneB" onclick="selectZone('B')">
-        <div class="zone-label">🅱️ Zon B</div>
-        <div class="zone-desc">Isnin = Hari pertama</div>
-        <div class="zone-states">KL, Putrajaya, Selangor, NS, Melaka, Pahang, Perak, Penang, Sabah, Sarawak, Labuan</div>
-      </div>
+      <div class="zone-option" id="zoneA" onclick="selectZone('A')"><div class="zone-label">ZON A</div><div class="zone-desc">Ahad = Hari pertama</div><div class="zone-states">Perlis, Kedah, Kelantan, Terengganu, Johor</div></div>
+      <div class="zone-option" id="zoneB" onclick="selectZone('B')"><div class="zone-label">ZON B</div><div class="zone-desc">Isnin = Hari pertama</div><div class="zone-states">KL, Selangor, NS, Melaka, Pahang, Perak, Penang, Sabah, Sarawak, Labuan</div></div>
     </div>
   </div>
 
-  <!-- BACKGROUND -->
-  <div class="card">
-    <h3>🎨 Latar Belakang (Background)</h3>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Tema preset untuk login page</p>
-    <div style="margin-bottom:14px">
-      <label style="font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Login Background</label>
-      <div class="bg-grid">
-        <div class="bg-chip active" id="bg-default" onclick="selectBg('default')"><div class="bg-preview default"></div>Ungu</div>
-        <div class="bg-chip" id="bg-green" onclick="selectBg('green')"><div class="bg-preview green"></div>Hijau</div>
-        <div class="bg-chip" id="bg-blue" onclick="selectBg('blue')"><div class="bg-preview blue"></div>Biru</div>
-        <div class="bg-chip" id="bg-sunset" onclick="selectBg('sunset')"><div class="bg-preview sunset"></div>Oren</div>
-      </div>
-    </div>
-    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px">
-      <label style="font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">📤 Upload Gambar Sendiri</label>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <input type="file" id="bgUpload" accept="image/*" style="font-size:.8rem" onchange="uploadBg()">
-        <button class="btn btn-out btn-sm" onclick="document.getElementById('bgUpload').click()">📁 Pilih Fail</button>
-        <span id="bgUploadStatus" style="font-size:.75rem;color:var(--green)"></span>
-        <button class="btn btn-red btn-sm" id="bgResetBtn" style="display:none" onclick="resetUpload('bg')">🗑️ Buang Custom</button>
-      </div>
-      <span class="hint">Auto-resize ke WebP. Max 10MB. Background akan replace tema preset.</span>
+  <div class="card"><h3>◆ LATAR LOGIN</h3>
+    <div class="bg-grid"><div class="bg-chip active" id="bg-default" onclick="selectBg('default')"><div class="bg-preview" style="background:linear-gradient(135deg,#1A1423,#2D1B3E,#1E3A5F,#0F172A)"></div>UNGU</div>
+    <div class="bg-chip" id="bg-green" onclick="selectBg('green')"><div class="bg-preview" style="background:linear-gradient(135deg,#064E3B,#065F46,#047857,#064E3B)"></div>HIJAU</div>
+    <div class="bg-chip" id="bg-blue" onclick="selectBg('blue')"><div class="bg-preview" style="background:linear-gradient(135deg,#1E3A5F,#1E40AF,#1D4ED8,#0F172A)"></div>BIRU</div>
+    <div class="bg-chip" id="bg-sunset" onclick="selectBg('sunset')"><div class="bg-preview" style="background:linear-gradient(135deg,#7C2D12,#9A3412,#C2410C,#431407)"></div>OREN</div></div>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <input type="file" id="bgUpload" accept="image/*" style="font-size:.76rem;color:var(--cyber-text2)" onchange="uploadBg()">
+      <button class="btn btn-out btn-sm" onclick="document.getElementById('bgUpload').click()">UPLOAD BG</button>
+      <span id="bgUploadStatus" style="font-size:.7rem;color:var(--cyber-neon)"></span>
+      <button class="btn btn-red btn-sm" id="bgResetBtn" style="display:none" onclick="resetUpload('bg')">BUANG</button>
     </div>
   </div>
 
-  <!-- LOGIN ICON -->
-  <div class="card">
-    <h3>🖼️ Ikon Login Page</h3>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Ikon emoji preset atau upload gambar sendiri</p>
+  <div class="card"><h3>◆ IKON LOGIN</h3>
     <div class="icon-grid" id="iconGrid">
-      <div class="icon-chip active" onclick="selectIcon('👨‍👩‍👧‍👦')">👨‍👩‍👧‍👦</div>
-      <div class="icon-chip" onclick="selectIcon('👨‍👩‍👦‍👦')">👨‍👩‍👦‍👦</div>
-      <div class="icon-chip" onclick="selectIcon('👨‍👩‍👧')">👨‍👩‍👧</div>
-      <div class="icon-chip" onclick="selectIcon('👪')">👪</div>
-      <div class="icon-chip" onclick="selectIcon('🏠')">🏠</div>
-      <div class="icon-chip" onclick="selectIcon('❤️')">❤️</div>
-      <div class="icon-chip" onclick="selectIcon('🌟')">🌟</div>
-      <div class="icon-chip" onclick="selectIcon('📅')">📅</div>
+      <div class="icon-chip active" onclick="selectIcon('👨‍👩‍👧‍👦')">👨‍👩‍👧‍👦</div><div class="icon-chip" onclick="selectIcon('👨‍👩‍👦‍👦')">👨‍👩‍👦‍👦</div><div class="icon-chip" onclick="selectIcon('👨‍👩‍👧')">👨‍👩‍👧</div><div class="icon-chip" onclick="selectIcon('👪')">👪</div>
+      <div class="icon-chip" onclick="selectIcon('🏠')">🏠</div><div class="icon-chip" onclick="selectIcon('❤️')">❤️</div><div class="icon-chip" onclick="selectIcon('🌟')">🌟</div><div class="icon-chip" onclick="selectIcon('📅')">📅</div>
     </div>
-    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:10px">
-      <label style="font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">📤 Upload Icon Sendiri</label>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <input type="file" id="iconUpload" accept="image/*" style="font-size:.8rem;display:none" onchange="uploadIcon()">
-        <button class="btn btn-out btn-sm" onclick="document.getElementById('iconUpload').click()">📁 Pilih Fail</button>
-        <span id="iconUploadStatus" style="font-size:.75rem;color:var(--green)"></span>
-        <button class="btn btn-red btn-sm" id="iconResetBtn" style="display:none" onclick="resetUpload('icon')">🗑️ Buang Custom</button>
-      </div>
-      <span class="hint">Auto-resize ke 256px² PNG. Ikon custom akan replace emoji.</span>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <input type="file" id="iconUpload" accept="image/*" style="font-size:.76rem;color:var(--cyber-text2);display:none" onchange="uploadIcon()">
+      <button class="btn btn-out btn-sm" onclick="document.getElementById('iconUpload').click()">UPLOAD IKON</button>
+      <span id="iconUploadStatus" style="font-size:.7rem;color:var(--cyber-neon)"></span>
+      <button class="btn btn-red btn-sm" id="iconResetBtn" style="display:none" onclick="resetUpload('icon')">BUANG</button>
     </div>
   </div>
 
   <div class="btn-row" style="justify-content:flex-start;margin-bottom:16px">
-    <button class="btn btn-pri" onclick="saveAllSettings()" style="padding:12px 28px;font-size:.9rem">💾 Simpan Semua Tetapan</button>
+    <button class="btn btn-pri" onclick="saveAllSettings()" style="padding:12px 28px;font-size:.85rem">◆ SIMPAN TETAPAN ◆</button>
   </div>
 
-  <!-- USERS -->
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <h3 style="margin-bottom:0">👥 Ahli Keluarga</h3>
-      <button class="btn btn-pri" onclick="openUserModal()">➕ Tambah Ahli</button>
-    </div>
-    <div style="overflow-x:auto">
-    <table><thead><tr><th>ID</th><th>Username</th><th>Nama</th><th>Warna</th><th>Role</th><th>Tindakan</th></tr></thead>
-    <tbody id="userTable"></tbody></table>
-    </div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="margin-bottom:0">◆ AHLI</h3><button class="btn btn-pri" onclick="openUserModal()">+ TAMBAH</button></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>ID</th><th>USER</th><th>NAMA</th><th>WARNA</th><th>ROLE</th><th></th></tr></thead><tbody id="userTable"></tbody></table></div>
   </div>
 </div>
 
-<!-- USER MODAL -->
-<div class="modal-overlay" id="userModal">
-  <div class="modal">
-    <h3 id="userModalTitle">Tambah Ahli Keluarga</h3>
-    <form onsubmit="saveUser(event)">
-      <input type="hidden" id="userId">
-      <div class="fg"><label>Nama Penuh *</label><input type="text" id="uFullName" required></div>
-      <div class="fg"><label>Username *</label><input type="text" id="uUsername" required><span class="hint">Untuk login</span></div>
-      <div class="fg"><label>Password</label><input type="password" id="uPassword"><span class="hint" id="pwHint">Kosongkan = guna password default</span></div>
-      <div class="fg"><label>Warna</label><input type="color" id="uColor" value="#3B82F6" style="height:38px;padding:3px"></div>
-      <div class="fg"><label>Role</label><select id="uRole"><option value="0">Ahli Biasa</option><option value="1">Admin</option></select></div>
-      <div class="btn-row">
-        <button type="button" class="btn btn-red" id="btnDeleteUser" style="display:none;margin-right:auto" onclick="deleteUser()">🗑️ Padam</button>
-        <button type="button" class="btn btn-out" onclick="closeUserModal()">Batal</button>
-        <button type="submit" class="btn btn-pri">💾 Simpan</button>
-      </div>
-    </form>
-  </div>
-</div>
-
+<div class="modal-overlay" id="userModal"><div class="modal"><h3 id="userModalTitle">◆ TAMBAH AHLI</h3>
+  <form onsubmit="saveUser(event)"><input type="hidden" id="userId">
+    <div class="fg"><label>Nama</label><input type="text" id="uFullName" required></div>
+    <div class="fg"><label>Username</label><input type="text" id="uUsername" required></div>
+    <div class="fg"><label>Password</label><input type="password" id="uPassword"><span class="hint" id="pwHint">Kosong = guna default</span></div>
+    <div class="fg"><label>Warna</label><input type="color" id="uColor" value="#00f3ff" style="height:38px;padding:3px;background:#0b0f19;border:1px solid var(--cyber-border)"></div>
+    <div class="fg"><label>Role</label><select id="uRole"><option value="0">USER</option><option value="1">ADMIN</option></select></div>
+    <div class="btn-row"><button type="button" class="btn btn-red" id="btnDeleteUser" style="display:none;margin-right:auto" onclick="deleteUser()">PADAM</button><button type="button" class="btn btn-out" onclick="closeUserModal()">BATAL</button><button type="submit" class="btn btn-pri">SIMPAN</button></div>
+  </form></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
-var token=localStorage.getItem('token');
-var user=JSON.parse(localStorage.getItem('user')||'{}');
+var token=localStorage.getItem('token'),user=JSON.parse(localStorage.getItem('user')||'{}');
 if(!token||!user.is_admin)window.location.href='/';
+var settings={allowRegister:false,zone:'B',loginBg:'default',loginIcon:'👨‍👩‍👧‍👦',waEnabled:false};
 
-var settings={allowRegister:false,zone:'B',loginBg:'default',loginIcon:'👨‍👩‍👧‍👦'};
-
-async function api(url,opts){
-  if(!opts)opts={};if(!opts.headers)opts.headers={};
-  opts.headers['Authorization']='Bearer '+token;
-  if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
-  return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})});
-}
-
+async function api(url,opts){if(!opts)opts={};if(!opts.headers)opts.headers={};opts.headers['Authorization']='Bearer '+token;if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})});}
 function logout(){localStorage.clear();window.location.href='/login'}
 
-// ===== THEME =====
-var savedTheme=localStorage.getItem('fc_theme')||'system';
-function setTheme(t){
-  savedTheme=t;localStorage.setItem('fc_theme',t);
-  document.documentElement.setAttribute('data-theme',t);
-  var btns=document.querySelectorAll('.theme-btn');
-  btns.forEach(function(b,i){b.classList.toggle('active',(i===0&&t==='system')||(i===1&&t==='light')||(i===2&&t==='dark'))});
-}
-setTheme(savedTheme);
-
-// Load settings
 fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
-  settings.allowRegister=d.allow_register==='1';
-  settings.zone=d.zone||'B';
-  settings.loginBg=d.login_bg||'default';
-  settings.loginIcon=d.login_icon||'👨‍👩‍👧‍👦';
-  settings.waEnabled=d.wa_enabled==='1';
-  document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';
-  document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
-  document.getElementById('waApiToken').value=d.wa_api_token||'';
-  document.getElementById('waGroupId').value=d.wa_group_id||'';
-  document.getElementById('waPhone1').value=d.wa_phone_1||'';
-  document.getElementById('waPhone2').value=d.wa_phone_2||'';
-  document.getElementById('waPhone3').value=d.wa_phone_3||'';
-  document.getElementById('waReminderHour').value=d.wa_reminder_hour||'7';
-  document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);
-  document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF';
-  updateRegToggle();
-  updateZoneUI();
-  updateBgUI();
-  updateIconUI();
-  checkCustomUploads(d);
+  settings.allowRegister=d.allow_register==='1';settings.zone=d.zone||'B';settings.loginBg=d.login_bg||'default';settings.loginIcon=d.login_icon||'👨‍👩‍👧‍👦';settings.waEnabled=d.wa_enabled==='1';
+  document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
+  document.getElementById('waApiToken').value=d.wa_api_token||'';document.getElementById('waGroupId').value=d.wa_group_id||'';document.getElementById('waPhone1').value=d.wa_phone_1||'';document.getElementById('waPhone2').value=d.wa_phone_2||'';document.getElementById('waPhone3').value=d.wa_phone_3||'';document.getElementById('waReminderHour').value=d.wa_reminder_hour||'7';
+  document.getElementById('toggleRegister').classList.toggle('on',settings.allowRegister);document.getElementById('regLabel').textContent=settings.allowRegister?'BUKA':'TUTUP';
+  document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF';document.getElementById('waLabel').style.color=settings.waEnabled?'var(--cyber-neon)':'var(--cyber-pink)';
+  selectZone(settings.zone);selectBg(settings.loginBg);selectIcon(settings.loginIcon);checkCustomUploads(d);
 });
 
-function updateRegToggle(){
-  var t=document.getElementById('toggleRegister');
-  if(settings.allowRegister){t.classList.add('on');document.getElementById('regLabel').textContent='BUKA'}
-  else{t.classList.remove('on');document.getElementById('regLabel').textContent='TUTUP'}
-}
-function toggleReg(){settings.allowRegister=!settings.allowRegister;updateRegToggle()}
+function toggleReg(){settings.allowRegister=!settings.allowRegister;document.getElementById('toggleRegister').classList.toggle('on',settings.allowRegister);document.getElementById('regLabel').textContent=settings.allowRegister?'BUKA':'TUTUP'}
+function toggleWA(){settings.waEnabled=!settings.waEnabled;document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF';document.getElementById('waLabel').style.color=settings.waEnabled?'var(--cyber-neon)':'var(--cyber-pink)'}
 
-function selectZone(z){
-  settings.zone=z;
-  document.getElementById('zoneA').classList.toggle('active',z==='A');
-  document.getElementById('zoneB').classList.toggle('active',z==='B');
-}
-function updateZoneUI(){selectZone(settings.zone)}
-
-function selectBg(bg){
-  settings.loginBg=bg;
-  document.querySelectorAll('.bg-chip').forEach(function(c){c.classList.toggle('active',c.id==='bg-'+bg)});
-}
-function updateBgUI(){selectBg(settings.loginBg)}
-
-function selectIcon(icon){
-  settings.loginIcon=icon;
-  document.querySelectorAll('.icon-chip').forEach(function(c){c.classList.toggle('active',c.textContent===icon)});
-}
-function updateIconUI(){selectIcon(settings.loginIcon)}
+function selectZone(z){settings.zone=z;document.getElementById('zoneA').classList.toggle('active',z==='A');document.getElementById('zoneB').classList.toggle('active',z==='B')}
+function selectBg(bg){settings.loginBg=bg;document.querySelectorAll('.bg-chip').forEach(function(c){c.classList.toggle('active',c.id==='bg-'+bg)})}
+function selectIcon(icon){settings.loginIcon=icon;document.querySelectorAll('.icon-chip').forEach(function(c){c.classList.toggle('active',c.textContent===icon)})}
 
 async function saveAllSettings(){
-  await api('/api/settings',{method:'PUT',body:{
-    family_name:document.getElementById('sFamilyName').value,
-    brand_title:document.getElementById('sBrandTitle').value,
-    allow_register:settings.allowRegister?'1':'0',
-    zone:settings.zone,
-    login_bg:settings.loginBg,
-    login_icon:settings.loginIcon,
-    wa_enabled:settings.waEnabled?'1':'0',
-    wa_api_token:document.getElementById('waApiToken').value,
-    wa_group_id:document.getElementById('waGroupId').value,
-    wa_phone_1:document.getElementById('waPhone1').value,
-    wa_phone_2:document.getElementById('waPhone2').value,
-    wa_phone_3:document.getElementById('waPhone3').value,
-    wa_reminder_hour:document.getElementById('waReminderHour').value||'7',
-  }});
-  toast('✅ Semua tetapan disimpan! Refresh calendar untuk lihat perubahan.');
-  try{var w=window.open('','_calendar_main');if(w&&w.location)w.location.reload()}catch(e){}
+  await api('/api/settings',{method:'PUT',body:{family_name:document.getElementById('sFamilyName').value,brand_title:document.getElementById('sBrandTitle').value,allow_register:settings.allowRegister?'1':'0',zone:settings.zone,login_bg:settings.loginBg,login_icon:settings.loginIcon,wa_enabled:settings.waEnabled?'1':'0',wa_api_token:document.getElementById('waApiToken').value,wa_group_id:document.getElementById('waGroupId').value,wa_phone_1:document.getElementById('waPhone1').value,wa_phone_2:document.getElementById('waPhone2').value,wa_phone_3:document.getElementById('waPhone3').value,wa_reminder_hour:document.getElementById('waReminderHour').value||'7'}});
+  toast('TETAPAN DISIMPAN');try{var w=window.open('','_calendar_main');if(w&&w.location)w.location.reload()}catch(e){}
 }
 
-// WhatsApp config
-settings.waEnabled=false;
-function toggleWA(){settings.waEnabled=!settings.waEnabled;
-  document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);
-  document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF'}
-async function testWhatsApp(){
-  var r=await api('/api/wa/test',{method:'POST'});
-  if(r.ok)toast('✅ WhatsApp test berjaya!')}else toast('❌ '+(r.data.error||'Gagal'),'error')}
-async function triggerReminder(){
-  if(!confirm('Hantar reminder untuk semua user yang ada event hari ini?'))return;
-  var r=await api('/api/wa/send-reminder',{method:'POST'});
-  if(r.ok)toast('📤 Dihantar ke '+r.data.sent+' user. Status: '+r.data.status)}else toast('❌ Gagal','error')}
+// WA
+async function testWhatsApp(){var r=await api('/api/wa/test',{method:'POST'});if(r.ok)toast('TEST BERJAYA')}else toast('GAGAL: '+(r.data.error||''),'error')
+async function triggerReminder(){if(!confirm('Hantar reminder ke group sekarang?'))return;var r=await api('/api/wa/send-reminder',{method:'POST'});if(r.ok)toast('DIHANTAR — '+r.data.status)}else toast('GAGAL','error')
+
+// Upload
+async function uploadBg(){var file=document.getElementById('bgUpload').files[0];if(!file)return;var fd=new FormData();fd.append('file',file);var r=await fetch('/api/upload/bg',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd}).then(function(r){return r.json()});if(r.message){settings.bg='custom';selectBg('custom');document.getElementById('bgUploadStatus').textContent='OK';document.getElementById('bgResetBtn').style.display='inline-flex';toast('BG DIUPLOAD')}else toast('GAGAL','error')}
+async function uploadIcon(){var file=document.getElementById('iconUpload').files[0];if(!file)return;var fd=new FormData();fd.append('file',file);var r=await fetch('/api/upload/icon',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd}).then(function(r){return r.json()});if(r.message){document.getElementById('iconUploadStatus').textContent='OK';document.getElementById('iconResetBtn').style.display='inline-flex';selectIcon('__custom__');toast('IKON DIUPLOAD')}else toast('GAGAL','error')}
+async function resetUpload(kind){var r=await fetch('/api/upload/reset/'+kind,{method:'POST',headers:{'Authorization':'Bearer '+token}}).then(function(r){return r.json()});if(r.message){if(kind==='bg'){document.getElementById('bgUpload').value='';document.getElementById('bgUploadStatus').textContent='';document.getElementById('bgResetBtn').style.display='none';selectBg('default')}if(kind==='icon'){document.getElementById('iconUpload').value='';document.getElementById('iconUploadStatus').textContent='';document.getElementById('iconResetBtn').style.display='none';selectIcon('👨‍👩‍👧‍👦')}toast('CUSTOM DIBUANG')}else toast('GAGAL','error')}
+function checkCustomUploads(d){if(d.custom_bg){document.getElementById('bgUploadStatus').textContent='OK';document.getElementById('bgResetBtn').style.display='inline-flex';settings.bg='custom'}if(d.custom_icon){document.getElementById('iconUploadStatus').textContent='OK';document.getElementById('iconResetBtn').style.display='inline-flex'}}
 
 // Users
-async function loadUsers(){
-  var r=await api('/api/users');
-  var tbody=document.getElementById('userTable');
-  if(!r.ok){tbody.innerHTML='<tr><td colspan="6">Ralat</td></tr>';return}
-  tbody.innerHTML=r.data.map(function(u){return '<tr><td>'+u.id+'</td><td>'+u.username+'</td><td><span class="dot" style="background:'+u.color+'"></span>'+u.full_name+'</td><td>'+u.color+'</td><td><span class="badge '+(u.is_admin?'badge-admin':'badge-user')+'">'+(u.is_admin?'Admin':'Ahli')+'</span></td><td><button class="btn btn-out" onclick="editUser('+u.id+')" style="font-size:.7rem;padding:4px 8px">✏️</button></td></tr>'}).join('');
-}
+async function loadUsers(){var r=await api('/api/users'),tbody=document.getElementById('userTable');if(!r.ok){tbody.innerHTML='<tr><td colspan="6">Ralat</td></tr>';return}tbody.innerHTML=r.data.map(function(u){return'<tr><td>'+u.id+'</td><td>'+u.username+'</td><td><span class="dot" style="background:'+u.color+'"></span>'+u.full_name+'</td><td style="color:'+u.color+'">'+u.color+'</td><td><span class="badge '+(u.is_admin?'badge-admin':'badge-user')+'">'+(u.is_admin?'ADMIN':'USER')+'</span></td><td><button class="btn btn-out" onclick="editUser('+u.id+')" style="font-size:.68rem;padding:4px 8px">EDIT</button></td></tr>'}).join('')}
 loadUsers();
 
-function openUserModal(){
-  document.getElementById('userId').value='';document.getElementById('uFullName').value='';
-  document.getElementById('uUsername').value='';document.getElementById('uUsername').disabled=false;
-  document.getElementById('uPassword').value='';document.getElementById('pwHint').style.display='block';
-  document.getElementById('uColor').value='#3B82F6';document.getElementById('uRole').value='0';
-  document.getElementById('btnDeleteUser').style.display='none';
-  document.getElementById('userModalTitle').textContent='Tambah Ahli Keluarga';
-  document.getElementById('userModal').classList.add('show');
-}
+function openUserModal(){document.getElementById('userId').value='';document.getElementById('uFullName').value='';document.getElementById('uUsername').value='';document.getElementById('uUsername').disabled=false;document.getElementById('uPassword').value='';document.getElementById('pwHint').style.display='block';document.getElementById('uColor').value='#00f3ff';document.getElementById('uRole').value='0';document.getElementById('btnDeleteUser').style.display='none';document.getElementById('userModalTitle').textContent='◆ TAMBAH AHLI';document.getElementById('userModal').classList.add('show')}
 function closeUserModal(){document.getElementById('userModal').classList.remove('show')}
 
-async function editUser(id){
-  var r=await api('/api/users');if(!r.ok)return;
-  var u=r.data.find(function(x){return x.id===id});if(!u)return;
-  document.getElementById('userId').value=u.id;document.getElementById('uFullName').value=u.full_name;
-  document.getElementById('uUsername').value=u.username;document.getElementById('uUsername').disabled=true;
-  document.getElementById('uPassword').value='';document.getElementById('pwHint').style.display='block';
-  document.getElementById('uColor').value=u.color;document.getElementById('uRole').value=u.is_admin?'1':'0';
-  document.getElementById('btnDeleteUser').style.display='inline-flex';
-  document.getElementById('userModalTitle').textContent='Edit Ahli';
-  document.getElementById('userModal').classList.add('show');
-}
+async function editUser(id){var r=await api('/api/users');if(!r.ok)return;var u=r.data.find(function(x){return x.id===id});if(!u)return;document.getElementById('userId').value=u.id;document.getElementById('uFullName').value=u.full_name;document.getElementById('uUsername').value=u.username;document.getElementById('uUsername').disabled=true;document.getElementById('uPassword').value='';document.getElementById('uColor').value=u.color;document.getElementById('uRole').value=u.is_admin?'1':'0';document.getElementById('btnDeleteUser').style.display='inline-flex';document.getElementById('userModalTitle').textContent='◆ EDIT AHLI';document.getElementById('userModal').classList.add('show')}
 
-async function saveUser(e){
-  e.preventDefault();
-  var id=document.getElementById('userId').value;
-  var data={full_name:document.getElementById('uFullName').value,color:document.getElementById('uColor').value,is_admin:document.getElementById('uRole').value==='1'};
-  var pw=document.getElementById('uPassword').value;
-  if(id){
-    if(pw)data.password=pw;
-    var r=await api('/api/users/'+id,{method:'PUT',body:data});
-    if(r.ok){loadUsers();closeUserModal();toast('✅ Ahli dikemaskini')}else toast('❌ '+r.data.error,'error')
-  }else{
-    if(!pw)pw=document.getElementById('sDefaultPass').value||'member123';
-    data.password=pw;data.username=document.getElementById('uUsername').value;
-    var r=await api('/api/register',{method:'POST',body:data});
-    if(r.ok){loadUsers();closeUserModal();toast('✅ Ahli ditambah!')}else toast('❌ '+(r.data.error||'Gagal'),'error')
-  }
-}
+async function saveUser(e){e.preventDefault();var id=document.getElementById('userId').value;var data={full_name:document.getElementById('uFullName').value,color:document.getElementById('uColor').value,is_admin:document.getElementById('uRole').value==='1'};var pw=document.getElementById('uPassword').value;if(id){if(pw)data.password=pw;var r=await api('/api/users/'+id,{method:'PUT',body:data});if(r.ok){loadUsers();closeUserModal();toast('AHLI DIKEMASKINI')}else toast('GAGAL','error')}else{if(!pw)pw=document.getElementById('sDefaultPass').value||'member123';data.password=pw;data.username=document.getElementById('uUsername').value;var r=await api('/api/register',{method:'POST',body:data});if(r.ok){loadUsers();closeUserModal();toast('AHLI DITAMBAH')}else toast('GAGAL: '+(r.data.error||''),'error')}}
 
-async function deleteUser(){
-  var id=document.getElementById('userId').value;
-  if(!confirm('Padam ahli ini? Semua event & tugasan mereka akan dipadam.'))return;
-  var r=await api('/api/users/'+id,{method:'DELETE'});
-  if(r.ok){loadUsers();closeUserModal();toast('🗑️ Ahli dipadam')}else toast('❌ '+r.data.error,'error')
-}
+async function deleteUser(){var id=document.getElementById('userId').value;if(!confirm('Padam?'))return;var r=await api('/api/users/'+id,{method:'DELETE'});if(r.ok){loadUsers();closeUserModal();toast('AHLI DIPADAM')}else toast('GAGAL','error')}
 
 function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},3000)}
-
-// ===== IMAGE UPLOAD =====
-async function uploadBg(){
-  var file=document.getElementById('bgUpload').files[0];
-  if(!file)return;
-  var fd=new FormData();fd.append('file',file);
-  var r=await fetch('/api/upload/bg',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd}).then(function(r){return r.json()});
-  if(r.message){settings.bg='custom';selectBg('custom');document.getElementById('bgUploadStatus').textContent='✅ '+r.filename+' ('+Math.round(file.size/1024)+'KB)';document.getElementById('bgResetBtn').style.display='inline-flex';toast('✅ Background diupload!')}
-  else toast('❌ '+(r.error||'Gagal'),'error')
-}
-
-async function uploadIcon(){
-  var file=document.getElementById('iconUpload').files[0];
-  if(!file)return;
-  var fd=new FormData();fd.append('file',file);
-  var r=await fetch('/api/upload/icon',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd}).then(function(r){return r.json()});
-  if(r.message){document.getElementById('iconUploadStatus').textContent='✅ '+r.filename;document.getElementById('iconResetBtn').style.display='inline-flex';selectIcon('__custom__');toast('✅ Ikon diupload!')}
-  else toast('❌ '+(r.error||'Gagal'),'error')
-}
-
-async function resetUpload(kind){
-  var r=await fetch('/api/upload/reset/'+kind,{method:'POST',headers:{'Authorization':'Bearer '+token}}).then(function(r){return r.json()});
-  if(r.message){
-    if(kind==='bg'){document.getElementById('bgUpload').value='';document.getElementById('bgUploadStatus').textContent='';document.getElementById('bgResetBtn').style.display='none';settings.bg='default';selectBg('default')}
-    if(kind==='icon'){document.getElementById('iconUpload').value='';document.getElementById('iconUploadStatus').textContent='';document.getElementById('iconResetBtn').style.display='none';selectIcon('👨‍👩‍👧‍👦')}
-    toast('🗑️ Custom '+kind+' dibuang')
-  }else toast('❌ Gagal','error')
-}
-
-// Check for existing custom uploads on load
-function checkCustomUploads(d){
-  if(d.custom_bg){
-    document.getElementById('bgUploadStatus').textContent='✅ '+d.custom_bg;
-    document.getElementById('bgResetBtn').style.display='inline-flex';
-    settings.bg='custom';
-  }
-  if(d.custom_icon){
-    document.getElementById('iconUploadStatus').textContent='✅ '+d.custom_icon;
-    document.getElementById('iconResetBtn').style.display='inline-flex';
-  }
-}
 document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeUserModal()});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeUserModal()});
 </script>
