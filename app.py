@@ -64,6 +64,10 @@ def init_db():
         if not db.execute("SELECT key FROM settings WHERE key='family_name'").fetchone():
             db.execute("INSERT OR IGNORE INTO settings VALUES ('family_name','Keluarga Saya')")
             db.execute("INSERT OR IGNORE INTO settings VALUES ('allow_register','0')")
+            db.execute("INSERT OR IGNORE INTO settings VALUES ('zone','B')")
+            db.execute("INSERT OR IGNORE INTO settings VALUES ('login_bg','default')")
+            db.execute("INSERT OR IGNORE INTO settings VALUES ('login_icon','👨‍👩‍👧‍👦')")
+            db.execute("INSERT OR IGNORE INTO settings VALUES ('calendar_bg','default')")
         # Default admin
         if not db.execute("SELECT id FROM users WHERE username='admin'").fetchone():
             pw = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt()).decode()
@@ -128,9 +132,23 @@ def get_settings():
 def update_settings():
     data = request.get_json()
     db = get_db()
+    old_zone = db.execute("SELECT value FROM settings WHERE key='zone'").fetchone()
+    old_zone = old_zone['value'] if old_zone else 'B'
     for k,v in data.items():
         db.execute("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)",(k,str(v)))
     db.commit()
+    # If zone changed, re-import holidays
+    new_zone = data.get('zone')
+    if new_zone and new_zone != old_zone:
+        try:
+            sys_user = db.execute("SELECT id FROM users WHERE username='_SYSTEM'").fetchone()
+            if sys_user:
+                db.execute("DELETE FROM events WHERE user_id=? AND category='cuti'",(sys_user['id'],))
+                db.commit()
+            from holidays import run as import_holidays
+            import_holidays()
+        except Exception as e:
+            print(f"Zone change holiday re-import skipped: {e}")
     return jsonify({'message':'Tetapan dikemaskini'})
 
 # ===== AUTH =====

@@ -9,11 +9,19 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Inter',sans-serif;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
     
-    /* Animated background — inspired by 21st.dev Serafim Abstract Ripple */
+    /* Animated background — dynamic via settings */
     .bg-animated{
-      position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#1A1423 0%,#2D1B3E 30%,#1E3A5F 60%,#0F172A 100%);
+      position:fixed;inset:0;z-index:0;
     }
-    .bg-animated::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(139,92,246,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(236,72,153,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(59,130,246,.1),transparent 50%)}
+    .bg-animated.default{background:linear-gradient(135deg,#1A1423 0%,#2D1B3E 30%,#1E3A5F 60%,#0F172A 100%)}
+    .bg-animated.default::before{background:radial-gradient(ellipse at 20% 50%,rgba(139,92,246,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(236,72,153,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(59,130,246,.1),transparent 50%)}
+    .bg-animated.green{background:linear-gradient(135deg,#064E3B 0%,#065F46 30%,#047857 60%,#064E3B 100%)}
+    .bg-animated.green::before{background:radial-gradient(ellipse at 20% 50%,rgba(34,197,94,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(16,185,129,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(5,150,105,.1),transparent 50%)}
+    .bg-animated.blue{background:linear-gradient(135deg,#1E3A5F 0%,#1E40AF 30%,#1D4ED8 60%,#0F172A 100%)}
+    .bg-animated.blue::before{background:radial-gradient(ellipse at 20% 50%,rgba(59,130,246,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(37,99,235,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(29,78,216,.1),transparent 50%)}
+    .bg-animated.sunset{background:linear-gradient(135deg,#7C2D12 0%,#9A3412 30%,#C2410C 60%,#431407 100%)}
+    .bg-animated.sunset::before{background:radial-gradient(ellipse at 20% 50%,rgba(249,115,22,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(234,88,12,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(194,65,12,.1),transparent 50%)}
+    .bg-animated::before{content:'';position:absolute;inset:0}
     
     /* Floating orbs */
     .orb{position:absolute;border-radius:50%;filter:blur(60px);animation:float var(--dur) ease-in-out infinite;opacity:0.6;pointer-events:none}
@@ -59,7 +67,7 @@
   </style>
 </head>
 <body>
-<div class="bg-animated">
+<div class="bg-animated" id="bgLayer">
   <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
   <div class="orb orb-4"></div><div class="orb orb-5"></div>
   <div class="particles" id="particles"></div>
@@ -67,7 +75,7 @@
 
 <div class="login-wrapper">
   <div class="login-card">
-    <div class="family-icon">👨‍👩‍👧‍👦</div>
+    <div class="family-icon" id="familyIcon">👨‍👩‍👧‍👦</div>
     <div class="family-name" id="familyName">Keluarga Saya</div>
     <div class="family-sub">Family Calendar • Planning Bersama</div>
     <div class="error" id="error"></div>
@@ -96,9 +104,17 @@
   }
 })();
 
-// Load family name
+// Load family name, icon, background from settings
 fetch('/api/settings').then(r=>r.json()).then(function(d){
   document.getElementById('familyName').textContent=d.family_name||'Keluarga Saya';
+  document.title=(d.family_name||'Keluarga Saya')+' — Log Masuk';
+  // Apply login icon
+  var icon=d.login_icon||'👨‍👩‍👧‍👦';
+  document.getElementById('familyIcon').textContent=icon;
+  // Apply background theme
+  var bg=d.login_bg||'default';
+  var bgLayer=document.getElementById('bgLayer');
+  bgLayer.className='bg-animated '+bg;
 }).catch(function(){});
 
 async function login(e){

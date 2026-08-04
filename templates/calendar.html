@@ -249,7 +249,22 @@ async function loadSettings(){
   try{var r=await fetch('/api/settings').then(function(r){return r.json()});
     document.getElementById('familyName').textContent=r.family_name||'Family Calendar';
     document.title=(r.family_name||'Family')+' Calendar';
+    // Zone-aware first day
+    var zone=r.zone||'B';
+    var firstDay=zone==='A'?0:1; // A=Sunday(0), B=Monday(1)
+    if(calendar)calendar.setOption('firstDay',firstDay);
+    // Calendar background
+    var calBg=r.calendar_bg||'default';
+    applyCalendarBg(calBg);
   }catch(e){}
+}
+
+function applyCalendarBg(bg){
+  var root=document.documentElement.style;
+  if(bg==='green'){root.setProperty('--bg','#ECFDF5')}
+  else if(bg==='blue'){root.setProperty('--bg','#EFF6FF')}
+  else if(bg==='sunset'){root.setProperty('--bg','#FFF7ED')}
+  else{root.setProperty('--bg','#F8FAFC')}
 }
 
 function fetchEvents(info,success,fail){

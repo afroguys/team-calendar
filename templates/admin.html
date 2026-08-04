@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Family Calendar</title>
+  <title>Admin Panel — Family Calendar</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{--green:#22C55E;--gdark:#16A34A;--red:#EF4444;--text:#1E293B;--muted:#64748B;--bg:#F8FAFC;--card:#fff;--border:#E2E8F0;--radius:10px}
@@ -10,18 +10,19 @@
     body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
     .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border)}
     .brand{font-size:1.1rem;font-weight:800}
-    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.8rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .12s}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .12s}
     .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--gdark)}
     .btn-out{background:var(--card);color:var(--text);border-color:var(--border)}.btn-out:hover{background:#F1F5F9}
-    .btn-red{background:var(--red);color:#fff}
+    .btn-red{background:var(--red);color:#fff}.btn-warn{background:#F59E0B;color:#fff}
     .container{max-width:900px;margin:0 auto;padding:20px}
-    .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.03);margin-bottom:16px;border:1px solid var(--border)}
-    .card h3{font-size:.95rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+    .card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.03);margin-bottom:16px;border:1px solid var(--border)}
+    .card h3{font-size:.95rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .fg{display:flex;flex-direction:column;gap:3px}
     .fg label{font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
-    .fg input,.fg select{padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.84rem;font-family:inherit}
+    .fg input,.fg select,.fg textarea{padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.84rem;font-family:inherit;background:var(--card)}
     .fg input:focus,.fg select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+    .fg textarea{resize:vertical;min-height:55px}
     .hint{font-size:.68rem;color:var(--muted);margin-top:2px}
     .toggle-wrap{display:flex;align-items:center;gap:10px}
     .toggle{position:relative;width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;transition:background .15s}
@@ -34,6 +35,26 @@
     .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
     .badge{font-size:.65rem;padding:2px 8px;border-radius:20px;font-weight:600}
     .badge-admin{background:#FEF3C7;color:#92400E}.badge-user{background:#DCFCE7;color:#166534}
+    .zone-option{background:var(--bg);border-radius:var(--radius);padding:16px;border:2px solid var(--border);cursor:pointer;transition:all .12s;text-align:center}
+    .zone-option:hover{border-color:var(--muted)}
+    .zone-option.active{border-color:var(--green);background:#F0FDF4}
+    .zone-option .zone-label{font-weight:700;font-size:1.1rem}
+    .zone-option .zone-desc{font-size:.72rem;color:var(--muted)}
+    .zone-option .zone-states{font-size:.7rem;color:var(--muted);margin-top:4px}
+    .zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .bg-preview{height:80px;border-radius:8px;margin-top:4px;border:1px solid var(--border);position:relative;overflow:hidden}
+    .bg-preview.default{background:linear-gradient(135deg,#1A1423,#2D1B3E,#1E3A5F,#0F172A)}
+    .bg-preview.green{background:linear-gradient(135deg,#064E3B,#065F46,#047857,#064E3B)}
+    .bg-preview.blue{background:linear-gradient(135deg,#1E3A5F,#1E40AF,#1D4ED8,#0F172A)}
+    .bg-preview.sunset{background:linear-gradient(135deg,#7C2D12,#9A3412,#C2410C,#431407)}
+    .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .bg-chip{cursor:pointer;text-align:center;padding:8px;border-radius:8px;border:2px solid var(--border);transition:all .12s;font-size:.72rem;font-weight:600}
+    .bg-chip:hover{border-color:var(--muted)}
+    .bg-chip.active{border-color:var(--green);background:#F0FDF4}
+    .icon-grid{display:flex;gap:8px;flex-wrap:wrap}
+    .icon-chip{width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all .12s;background:var(--bg)}
+    .icon-chip:hover{border-color:var(--muted);transform:scale(1.05)}
+    .icon-chip.active{border-color:var(--green);background:#F0FDF4}
     .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:16px}
     .modal-overlay.show{display:flex}
     .modal{background:var(--card);border-radius:14px;padding:24px;max-width:400px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.15)}
@@ -42,12 +63,12 @@
     .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.82rem;transform:translateY(100px);opacity:0;transition:all .3s}
     .toast.show{transform:translateY(0);opacity:1}
     .toast-success{background:#059669}.toast-error{background:var(--red)}
-    @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+    @media(max-width:600px){.form-grid,.zone-grid,.bg-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="brand">⚙️ Admin Panel</div>
+  <div class="brand">⚙️ Admin Panel — Family Calendar</div>
   <div style="display:flex;gap:8px">
     <a href="/" class="btn btn-out">📅 Calendar</a>
     <a href="#" class="btn btn-out" onclick="logout()">🚪 Keluar</a>
@@ -55,21 +76,72 @@
 </div>
 
 <div class="container">
-  <!-- FAMILY SETTINGS -->
+  <!-- FAMILY + ZONE -->
   <div class="card">
-    <h3>🏠 Tetapan Keluarga</h3>
+    <h3>🏠 Identiti Keluarga</h3>
     <div class="form-grid">
-      <div class="fg"><label>Nama Keluarga</label><input type="text" id="sFamilyName" placeholder="Keluarga Saya"><span class="hint">Dipapar di login & header calendar</span></div>
-      <div class="fg"><label>Nama Brand (title browser)</label><input type="text" id="sBrandTitle" placeholder="Family Calendar"></div>
+      <div class="fg"><label>Nama Keluarga</label><input type="text" id="sFamilyName" placeholder="Keluarga Saya"><span class="hint">Dipapar di login & header</span></div>
+      <div class="fg"><label>Title Browser</label><input type="text" id="sBrandTitle" placeholder="Family Calendar"></div>
     </div>
     <div class="form-grid" style="margin-top:8px">
-      <div class="fg"><label>Default Password Ahli Baru</label><input type="text" id="sDefaultPass" value="member123"><span class="hint">Diguna masa admin create user</span></div>
-      <div class="fg"><label>Benarkan Pendaftaran Awam</label>
+      <div class="fg"><label>Default Password Ahli Baru</label><input type="text" id="sDefaultPass" value="member123"></div>
+      <div class="fg"><label>Pendaftaran Awam</label>
         <div class="toggle-wrap"><div class="toggle" id="toggleRegister" onclick="toggleReg()"></div><span id="regLabel" style="font-size:.8rem">TUTUP</span></div>
-        <span class="hint">ON = sesiapa boleh register sendiri</span>
       </div>
     </div>
-    <div class="btn-row" style="justify-content:flex-start"><button class="btn btn-pri" onclick="saveSettings()">💾 Simpan Tetapan</button></div>
+  </div>
+
+  <!-- ZONE SELECTOR -->
+  <div class="card">
+    <h3>🗺️ Zon Kalendar</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Pilih zon anda untuk cuti sekolah & negeri yang tepat. Tukar zon akan auto-refresh semua cuti.</p>
+    <div class="zone-grid">
+      <div class="zone-option" id="zoneA" onclick="selectZone('A')">
+        <div class="zone-label">🅰️ Zon A</div>
+        <div class="zone-desc">Ahad = Hari pertama</div>
+        <div class="zone-states">Perlis, Kedah, Kelantan, Terengganu, Johor</div>
+      </div>
+      <div class="zone-option" id="zoneB" onclick="selectZone('B')">
+        <div class="zone-label">🅱️ Zon B</div>
+        <div class="zone-desc">Isnin = Hari pertama</div>
+        <div class="zone-states">KL, Putrajaya, Selangor, NS, Melaka, Pahang, Perak, Penang, Sabah, Sarawak, Labuan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKGROUND -->
+  <div class="card">
+    <h3>🎨 Latar Belakang (Background)</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Tema untuk login page & calendar</p>
+    <div style="margin-bottom:14px">
+      <label style="font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Login Background</label>
+      <div class="bg-grid">
+        <div class="bg-chip active" id="bg-default" onclick="selectBg('default')"><div class="bg-preview default"></div>Ungu</div>
+        <div class="bg-chip" id="bg-green" onclick="selectBg('green')"><div class="bg-preview green"></div>Hijau</div>
+        <div class="bg-chip" id="bg-blue" onclick="selectBg('blue')"><div class="bg-preview blue"></div>Biru</div>
+        <div class="bg-chip" id="bg-sunset" onclick="selectBg('sunset')"><div class="bg-preview sunset"></div>Oren</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN ICON -->
+  <div class="card">
+    <h3>🖼️ Ikon Login Page</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Ikon yang dipaparkan di halaman log masuk</p>
+    <div class="icon-grid" id="iconGrid">
+      <div class="icon-chip active" onclick="selectIcon('👨‍👩‍👧‍👦')">👨‍👩‍👧‍👦</div>
+      <div class="icon-chip" onclick="selectIcon('👨‍👩‍👦‍👦')">👨‍👩‍👦‍👦</div>
+      <div class="icon-chip" onclick="selectIcon('👨‍👩‍👧')">👨‍👩‍👧</div>
+      <div class="icon-chip" onclick="selectIcon('👪')">👪</div>
+      <div class="icon-chip" onclick="selectIcon('🏠')">🏠</div>
+      <div class="icon-chip" onclick="selectIcon('❤️')">❤️</div>
+      <div class="icon-chip" onclick="selectIcon('🌟')">🌟</div>
+      <div class="icon-chip" onclick="selectIcon('📅')">📅</div>
+    </div>
+  </div>
+
+  <div class="btn-row" style="justify-content:flex-start;margin-bottom:16px">
+    <button class="btn btn-pri" onclick="saveAllSettings()" style="padding:12px 28px;font-size:.9rem">💾 Simpan Semua Tetapan</button>
   </div>
 
   <!-- USERS -->
@@ -78,8 +150,10 @@
       <h3 style="margin-bottom:0">👥 Ahli Keluarga</h3>
       <button class="btn btn-pri" onclick="openUserModal()">➕ Tambah Ahli</button>
     </div>
+    <div style="overflow-x:auto">
     <table><thead><tr><th>ID</th><th>Username</th><th>Nama</th><th>Warna</th><th>Role</th><th>Tindakan</th></tr></thead>
     <tbody id="userTable"></tbody></table>
+    </div>
   </div>
 </div>
 
@@ -89,10 +163,10 @@
     <h3 id="userModalTitle">Tambah Ahli Keluarga</h3>
     <form onsubmit="saveUser(event)">
       <input type="hidden" id="userId">
-      <div class="fg"><label>Nama Penuh</label><input type="text" id="uFullName" required></div>
-      <div class="fg"><label>Username</label><input type="text" id="uUsername" required><span class="hint">Untuk login</span></div>
-      <div class="fg"><label>Password</label><input type="password" id="uPassword" minlength="4"><span class="hint" id="pwHint">Kosongkan guna default</span></div>
-      <div class="fg"><label>Warna Kategori</label><input type="color" id="uColor" value="#3B82F6" style="height:38px;padding:3px"></div>
+      <div class="fg"><label>Nama Penuh *</label><input type="text" id="uFullName" required></div>
+      <div class="fg"><label>Username *</label><input type="text" id="uUsername" required><span class="hint">Untuk login</span></div>
+      <div class="fg"><label>Password</label><input type="password" id="uPassword"><span class="hint" id="pwHint">Kosongkan = guna password default</span></div>
+      <div class="fg"><label>Warna</label><input type="color" id="uColor" value="#3B82F6" style="height:38px;padding:3px"></div>
       <div class="fg"><label>Role</label><select id="uRole"><option value="0">Ahli Biasa</option><option value="1">Admin</option></select></div>
       <div class="btn-row">
         <button type="button" class="btn btn-red" id="btnDeleteUser" style="display:none;margin-right:auto" onclick="deleteUser()">🗑️ Padam</button>
@@ -110,7 +184,7 @@ var token=localStorage.getItem('token');
 var user=JSON.parse(localStorage.getItem('user')||'{}');
 if(!token||!user.is_admin)window.location.href='/';
 
-var allowRegister=false;
+var settings={allowRegister:false,zone:'B',loginBg:'default',loginIcon:'👨‍👩‍👧‍👦'};
 
 async function api(url,opts){
   if(!opts)opts={};if(!opts.headers)opts.headers={};
@@ -123,27 +197,56 @@ function logout(){localStorage.clear();window.location.href='/login'}
 
 // Load settings
 fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
+  settings.allowRegister=d.allow_register==='1';
+  settings.zone=d.zone||'B';
+  settings.loginBg=d.login_bg||'default';
+  settings.loginIcon=d.login_icon||'👨‍👩‍👧‍👦';
   document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';
   document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
-  allowRegister=d.allow_register==='1';
   updateRegToggle();
+  updateZoneUI();
+  updateBgUI();
+  updateIconUI();
 });
 
 function updateRegToggle(){
   var t=document.getElementById('toggleRegister');
-  if(allowRegister){t.classList.add('on');document.getElementById('regLabel').textContent='BUKA'}
+  if(settings.allowRegister){t.classList.add('on');document.getElementById('regLabel').textContent='BUKA'}
   else{t.classList.remove('on');document.getElementById('regLabel').textContent='TUTUP'}
 }
+function toggleReg(){settings.allowRegister=!settings.allowRegister;updateRegToggle()}
 
-function toggleReg(){allowRegister=!allowRegister;updateRegToggle()}
+function selectZone(z){
+  settings.zone=z;
+  document.getElementById('zoneA').classList.toggle('active',z==='A');
+  document.getElementById('zoneB').classList.toggle('active',z==='B');
+}
+function updateZoneUI(){selectZone(settings.zone)}
 
-async function saveSettings(){
+function selectBg(bg){
+  settings.loginBg=bg;
+  document.querySelectorAll('.bg-chip').forEach(function(c){c.classList.toggle('active',c.id==='bg-'+bg)});
+}
+function updateBgUI(){selectBg(settings.loginBg)}
+
+function selectIcon(icon){
+  settings.loginIcon=icon;
+  document.querySelectorAll('.icon-chip').forEach(function(c){c.classList.toggle('active',c.textContent===icon)});
+}
+function updateIconUI(){selectIcon(settings.loginIcon)}
+
+async function saveAllSettings(){
   await api('/api/settings',{method:'PUT',body:{
     family_name:document.getElementById('sFamilyName').value,
     brand_title:document.getElementById('sBrandTitle').value,
-    allow_register:allowRegister?'1':'0'
+    allow_register:settings.allowRegister?'1':'0',
+    zone:settings.zone,
+    login_bg:settings.loginBg,
+    login_icon:settings.loginIcon
   }});
-  toast('✅ Tetapan disimpan');
+  toast('✅ Semua tetapan disimpan! Refresh calendar untuk lihat perubahan.');
+  // Refresh main calendar if open
+  try{var w=window.open('','_calendar_main');if(w&&w.location)w.location.reload()}catch(e){}
 }
 
 // Users
@@ -161,7 +264,7 @@ function openUserModal(){
   document.getElementById('uPassword').value='';document.getElementById('pwHint').style.display='block';
   document.getElementById('uColor').value='#3B82F6';document.getElementById('uRole').value='0';
   document.getElementById('btnDeleteUser').style.display='none';
-  document.getElementById('userModalTitle').textContent='Tambah Ahli';
+  document.getElementById('userModalTitle').textContent='Tambah Ahli Keluarga';
   document.getElementById('userModal').classList.add('show');
 }
 function closeUserModal(){document.getElementById('userModal').classList.remove('show')}
@@ -183,27 +286,26 @@ async function saveUser(e){
   var id=document.getElementById('userId').value;
   var data={full_name:document.getElementById('uFullName').value,color:document.getElementById('uColor').value,is_admin:document.getElementById('uRole').value==='1'};
   var pw=document.getElementById('uPassword').value;
-
   if(id){
     if(pw)data.password=pw;
     var r=await api('/api/users/'+id,{method:'PUT',body:data});
     if(r.ok){loadUsers();closeUserModal();toast('✅ Ahli dikemaskini')}else toast('❌ '+r.data.error,'error')
   }else{
-    if(!pw){pw=document.getElementById('sDefaultPass').value||'member123'}
+    if(!pw)pw=document.getElementById('sDefaultPass').value||'member123';
     data.password=pw;data.username=document.getElementById('uUsername').value;
     var r=await api('/api/register',{method:'POST',body:data});
-    if(r.ok){loadUsers();closeUserModal();toast('✅ Ahli ditambah')}else toast('❌ '+r.data.error,'error')
+    if(r.ok){loadUsers();closeUserModal();toast('✅ Ahli ditambah!')}else toast('❌ '+(r.data.error||'Gagal'),'error')
   }
 }
 
 async function deleteUser(){
   var id=document.getElementById('userId').value;
-  if(!confirm('Padam ahli ini? Semua event, birthday & tugasan mereka akan dipadam.'))return;
+  if(!confirm('Padam ahli ini? Semua event & tugasan mereka akan dipadam.'))return;
   var r=await api('/api/users/'+id,{method:'DELETE'});
   if(r.ok){loadUsers();closeUserModal();toast('🗑️ Ahli dipadam')}else toast('❌ '+r.data.error,'error')
 }
 
-function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}
+function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},3000)}
 document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeUserModal()});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeUserModal()});
 </script>
