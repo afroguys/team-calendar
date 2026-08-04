@@ -137,18 +137,30 @@ def update_settings():
 @app.route('/api/register', methods=['POST'])
 def register():
     db = get_db()
-    # Check if registration is allowed
+    # Check if registration is allowed (or if admin is creating)
+    is_admin_creating = False
+    auth = request.headers.get('Authorization','')
+    if auth.startswith('Bearer '):
+        try:
+            data_tok = jwt.decode(auth[7:], app.config['SECRET_KEY'], algorithms=['HS256'])
+            admin_user = db.execute("SELECT is_admin FROM users WHERE id=?",(data_tok['user_id'],)).fetchone()
+            if admin_user and admin_user['is_admin']:
+                is_admin_creating = True
+        except: pass
+
     allow = db.execute("SELECT value FROM settings WHERE key='allow_register'").fetchone()
-    if not allow or allow['value'] != '1':
+    if not is_admin_creating and (not allow or allow['value'] != '1'):
         return jsonify({'error':'Pendaftaran awam ditutup — hubungi admin'}),403
+
     data = request.get_json()
     if not data.get('username') or not data.get('password') or not data.get('full_name'):
         return jsonify({'error':'Semua field diperlukan'}),400
     if db.execute("SELECT id FROM users WHERE username=?",(data['username'],)).fetchone():
         return jsonify({'error':'Username telah wujud'}),409
     pw = bcrypt.hashpw(data['password'].encode(), bcrypt.gensalt()).decode()
-    db.execute("INSERT INTO users (username,password_hash,full_name,color) VALUES (?,?,?,?)",
-               (data['username'],pw,data['full_name'],data.get('color','#3B82F6')))
+    is_admin = int(data.get('is_admin',False)) if is_admin_creating else 0
+    db.execute("INSERT INTO users (username,password_hash,full_name,color,is_admin) VALUES (?,?,?,?,?)",
+               (data['username'],pw,data['full_name'],data.get('color','#3B82F6'),is_admin))
     db.commit()
     return jsonify({'message':'Pendaftaran berjaya'}),201
 
