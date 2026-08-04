@@ -1,4 +1,4 @@
-# Team Calendar — Shared Planning Dashboard
+# Team/Family Calendar — Shared Planning Dashboard
 
 Full-stack **team calendar app** dengan user login, event management, dan admin panel. Setiap user hanya boleh edit planning sendiri, tapi semua orang boleh lihat aktiviti team untuk bulan semasa.
 
