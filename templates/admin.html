@@ -114,6 +114,26 @@
     </div>
   </div>
 
+  <!-- WHATSAPP REMINDER -->
+  <div class="card">
+    <h3>📱 WhatsApp Bot — Reminder Automatik</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Hantar reminder WhatsApp automatik setiap pagi jika ada event. Guna <strong>WhatsApp Cloud API (Meta)</strong> — tak perlu phone. Setup di <a href="https://developers.facebook.com" target="_blank" style="color:var(--green)">developers.facebook.com</a>.</p>
+    <div class="form-grid">
+      <div class="fg"><label>Aktifkan WhatsApp Bot</label>
+        <div class="toggle-wrap"><div class="toggle" id="toggleWA" onclick="toggleWA()"></div><span id="waLabel" style="font-size:.8rem">OFF</span></div>
+      </div>
+      <div class="fg"><label>Jam Hantar Reminder</label><input type="number" id="waReminderHour" value="7" min="0" max="23"><span class="hint">0-23. Default: 7 pagi</span></div>
+      <div class="fg full"><label>WhatsApp API Token (Permanent)</label><input type="text" id="waApiToken" placeholder="EAAx..."><span class="hint">Dari Meta Developer → WhatsApp → Setup → Permanent Token</span></div>
+      <div class="fg"><label>Phone Number ID #1 (Utama)</label><input type="text" id="waPhone1" placeholder="123456789..."><span class="hint">Dari Meta → WhatsApp → Phone Number ID</span></div>
+      <div class="fg"><label>Phone Number ID #2 (Backup 1)</label><input type="text" id="waPhone2" placeholder="Kosongkan jika tiada"></div>
+      <div class="fg"><label>Phone Number ID #3 (Backup 2)</label><input type="text" id="waPhone3" placeholder="Kosongkan jika tiada"><span class="hint">Auto-failover jika #1/#2 gagal</span></div>
+    </div>
+    <div class="btn-row" style="justify-content:flex-start;gap:8px">
+      <button class="btn btn-pri btn-sm" onclick="testWhatsApp()">🧪 Test Hantar</button>
+      <button class="btn btn-warn btn-sm" onclick="triggerReminder()">📤 Hantar Reminder Sekarang</button>
+    </div>
+  </div>
+
   <!-- ZONE SELECTOR -->
   <div class="card">
     <h3>🗺️ Zon Kalendar</h3>
@@ -254,8 +274,16 @@ fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
   settings.zone=d.zone||'B';
   settings.loginBg=d.login_bg||'default';
   settings.loginIcon=d.login_icon||'👨‍👩‍👧‍👦';
+  settings.waEnabled=d.wa_enabled==='1';
   document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';
   document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
+  document.getElementById('waApiToken').value=d.wa_api_token||'';
+  document.getElementById('waPhone1').value=d.wa_phone_1||'';
+  document.getElementById('waPhone2').value=d.wa_phone_2||'';
+  document.getElementById('waPhone3').value=d.wa_phone_3||'';
+  document.getElementById('waReminderHour').value=d.wa_reminder_hour||'7';
+  document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);
+  document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF';
   updateRegToggle();
   updateZoneUI();
   updateBgUI();
@@ -296,12 +324,30 @@ async function saveAllSettings(){
     allow_register:settings.allowRegister?'1':'0',
     zone:settings.zone,
     login_bg:settings.loginBg,
-    login_icon:settings.loginIcon
+    login_icon:settings.loginIcon,
+    wa_enabled:settings.waEnabled?'1':'0',
+    wa_api_token:document.getElementById('waApiToken').value,
+    wa_phone_1:document.getElementById('waPhone1').value,
+    wa_phone_2:document.getElementById('waPhone2').value,
+    wa_phone_3:document.getElementById('waPhone3').value,
+    wa_reminder_hour:document.getElementById('waReminderHour').value||'7',
   }});
   toast('✅ Semua tetapan disimpan! Refresh calendar untuk lihat perubahan.');
-  // Refresh main calendar if open
   try{var w=window.open('','_calendar_main');if(w&&w.location)w.location.reload()}catch(e){}
 }
+
+// WhatsApp config
+settings.waEnabled=false;
+function toggleWA(){settings.waEnabled=!settings.waEnabled;
+  document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);
+  document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF'}
+async function testWhatsApp(){
+  var r=await api('/api/wa/test',{method:'POST'});
+  if(r.ok)toast('✅ WhatsApp test berjaya!')}else toast('❌ '+(r.data.error||'Gagal'),'error')}
+async function triggerReminder(){
+  if(!confirm('Hantar reminder untuk semua user yang ada event hari ini?'))return;
+  var r=await api('/api/wa/send-reminder',{method:'POST'});
+  if(r.ok)toast('📤 Dihantar ke '+r.data.sent+' user. Status: '+r.data.status)}else toast('❌ Gagal','error')}
 
 // Users
 async function loadUsers(){

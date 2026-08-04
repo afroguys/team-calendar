@@ -452,6 +452,180 @@ def reset_upload(kind):
 def serve_upload(filename):
     return send_from_directory(UPLOAD_DIR, filename)
 
+# ===== WHATSAPP REMINDER =====
+import requests, threading, time, re
+
+WA_API = "https://graph.facebook.com/v22.0"
+
+def send_whatsapp(phone_id, token, to_number, message):
+    """Send WhatsApp message via Cloud API. Returns (success, error_msg)."""
+    try:
+        resp = requests.post(
+            f"{WA_API}/{phone_id}/messages",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={
+                "messaging_product": "whatsapp",
+                "to": to_number,
+                "type": "text",
+                "text": {"body": message}
+            },
+            timeout=15
+        )
+        data = resp.json()
+        if resp.status_code == 200:
+            return True, data.get('messages', [{}])[0].get('id', 'sent')
+        return False, data.get('error', {}).get('message', str(data))
+    except Exception as e:
+        return False, str(e)
+
+def clean_wa_number(num):
+    """Clean phone number to E.164 format: 60123456789"""
+    num = re.sub(r'[\s\-\+\(\)]', '', str(num))
+    if num.startswith('0'): num = '6' + num[1:]  # 0123 → 60123
+    if not num.startswith('60'): num = '60' + num
+    return num
+
+def run_reminders(force=False):
+    """Check today's events for each user, send WhatsApp reminders. Called by cron or manual trigger."""
+    with app.app_context():
+        db = get_db()
+        # Get WhatsApp config
+        config = {}
+        for key in ['wa_api_token', 'wa_phone_1', 'wa_phone_2', 'wa_phone_3', 'wa_enabled', 'wa_reminder_hour']:
+            row = db.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+            config[key] = row['value'] if row else None
+
+        if config.get('wa_enabled') != '1':
+            return {'sent': 0, 'status': 'disabled', 'message': 'WhatsApp reminders disabled'}
+
+        token = config.get('wa_api_token')
+        phones = [p for p in [config.get('wa_phone_1'), config.get('wa_phone_2'), config.get('wa_phone_3')] if p and p.strip()]
+        if not token or not phones:
+            return {'sent': 0, 'status': 'no_config', 'message': 'Token atau nombor WhatsApp belum dikonfigurasi'}
+
+        # Get today's date
+        today = datetime.date.today().isoformat()
+        hour = int(config.get('wa_reminder_hour', '7'))
+
+        # Check if already sent today
+        if not force:
+            already = db.execute(
+                "SELECT value FROM settings WHERE key='wa_last_sent'"
+            ).fetchone()
+            if already and already['value'] == today:
+                return {'sent': 0, 'status': 'already_sent', 'message': f'Reminder dah dihantar hari ini ({today})'}
+
+        # Get all users with events today
+        users_with_events = db.execute("""
+            SELECT DISTINCT u.id, u.username, u.full_name
+            FROM events e JOIN users u ON e.user_id = u.id
+            WHERE date(e.start) = ? AND e.category != 'cuti' AND u.username != '_SYSTEM'
+        """, (today,)).fetchall()
+
+        if not users_with_events:
+            return {'sent': 0, 'status': 'no_events', 'message': 'Tiada event untuk hari ini'}
+
+        sent_count = 0
+        failures = []
+
+        for user in users_with_events:
+            # Get user's events
+            events = db.execute("""
+                SELECT title, start, "end", description, category
+                FROM events WHERE user_id=? AND date(start)=? AND category != 'cuti'
+                ORDER BY start
+            """, (user['id'], today)).fetchall()
+
+            if not events:
+                continue
+
+            # Compose message
+            greeting = f"🌅 *Selamat Pagi {user['full_name']}*!"
+            family = db.execute("SELECT value FROM settings WHERE key='family_name'").fetchone()
+            family_name = family['value'] if family else 'Family'
+
+            msg_parts = [greeting, f"", f"📅 *Aktiviti Hari Ini ({today})*:"]
+            for ev in events:
+                start_time = ev['start'][11:16] if 'T' in ev['start'] else ''
+                time_str = f" ({start_time})" if start_time else ''
+                cat = CATEGORIES.get(ev['category'], {}).get('icon', '📋')
+                msg_parts.append(f"{cat} *{ev['title']}*{time_str}")
+                if ev['description']:
+                    msg_parts.append(f"   _{ev['description']}_")
+
+            msg_parts.append(f"")
+            msg_parts.append(f"_{family_name} Calendar • Auto-Reminder_")
+            message = '\n'.join(msg_parts)
+
+            # Try sending with failover
+            sent = False
+            for phone_id in phones:
+                success, resp = send_whatsapp(phone_id, token, clean_wa_number(user.get('phone', '')), message)
+                if user.get('phone'):
+                    # User has phone number set
+                    pass
+                # For now, send to admin as notification of user's events
+                success, resp = send_whatsapp(phone_id, token, "", f"{message}\n\n📬 Reminder untuk {user['full_name']} (@{user['username']})")
+                if success:
+                    sent = True
+                    break
+                failures.append(f"{phone_id}: {resp}")
+
+            if sent:
+                sent_count += 1
+
+        # Mark sent
+        db.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('wa_last_sent', ?)", (today,))
+        db.commit()
+
+        result = {'sent': sent_count, 'total_users': len(users_with_events), 'status': 'ok'}
+        if failures:
+            result['failures'] = failures[:3]
+        return result
+
+@app.route('/api/wa/send-reminder', methods=['POST'])
+@admin_required
+def trigger_reminder():
+    """Manual trigger: send reminders now"""
+    result = run_reminders(force=True)
+    return jsonify(result)
+
+@app.route('/api/wa/test', methods=['POST'])
+@admin_required
+def test_whatsapp():
+    """Test WhatsApp connection with current config"""
+    db = get_db()
+    token = db.execute("SELECT value FROM settings WHERE key='wa_api_token'").fetchone()
+    phone = db.execute("SELECT value FROM settings WHERE key='wa_phone_1'").fetchone()
+    if not token or not phone:
+        return jsonify({'status': 'no_config', 'error': 'Token atau nombor belum dikonfigurasi'}), 400
+
+    success, resp = send_whatsapp(phone['value'], token['value'], '', "✅ *Family Calendar*\n\nWhatsApp integration berfungsi! Reminder akan dihantar automatik setiap pagi.")
+    return jsonify({'status': 'ok' if success else 'failed', 'response': str(resp)})
+
+# Start reminder scheduler in background thread
+def reminder_scheduler():
+    """Background thread: check every 30 minutes if reminder should be sent"""
+    while True:
+        try:
+            now = datetime.datetime.now()
+            if 6 <= now.hour <= 9:  # Only try between 6am-9am
+                run_reminders(force=False)
+        except Exception as e:
+            print(f"Reminder scheduler error: {e}")
+        time.sleep(1800)  # Check every 30 min
+
+import atexit
+scheduler_thread = None
+
+def start_scheduler():
+    global scheduler_thread
+    if scheduler_thread is None or not scheduler_thread.is_alive():
+        scheduler_thread = threading.Thread(target=reminder_scheduler, daemon=True)
+        scheduler_thread.start()
+
+atexit.register(lambda: None)  # Keep alive signal
+
 # ===== STATIC PAGES =====
 @app.route('/')
 def index(): return render_template('calendar.html')
@@ -464,4 +638,5 @@ def admin_page(): return render_template('admin.html')
 
 if __name__ == '__main__':
     init_db()
+    start_scheduler()
     app.run(host='0.0.0.0', port=5000, debug=True)

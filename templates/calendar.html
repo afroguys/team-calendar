@@ -324,6 +324,7 @@ function loadAll(){
 }
 
 function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}
+function refreshPage(){location.reload()} // Called by admin when settings change
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();document.getElementById('bdayModal').classList.remove('show')}});
 document.getElementById('eventModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
 document.getElementById('bdayModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')});
