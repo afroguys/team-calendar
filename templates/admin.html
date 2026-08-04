@@ -189,7 +189,7 @@ function selectIcon(icon){settings.loginIcon=icon;document.querySelectorAll('.ic
 
 async function saveAllSettings(){
   await api('/api/settings',{method:'PUT',body:{family_name:document.getElementById('sFamilyName').value,brand_title:document.getElementById('sBrandTitle').value,allow_register:settings.allowRegister?'1':'0',zone:settings.zone,login_bg:settings.loginBg,login_icon:settings.loginIcon,wa_enabled:settings.waEnabled?'1':'0',wa_api_token:document.getElementById('waApiToken').value,wa_group_id:document.getElementById('waGroupId').value,wa_phone_1:document.getElementById('waPhone1').value,wa_phone_2:document.getElementById('waPhone2').value,wa_phone_3:document.getElementById('waPhone3').value,wa_reminder_hour:document.getElementById('waReminderHour').value||'7'}});
-  toast('TETAPAN DISIMPAN');try{var w=window.open('','_calendar_main');if(w&&w.location)w.location.reload()}catch(e){}
+  toast('TETAPAN DISIMPAN');
 }
 
 // WA
