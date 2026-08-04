@@ -1,12 +1,16 @@
 """Family Calendar — Flask Backend"""
-import sqlite3, json, os, datetime
+import sqlite3, json, os, datetime, io, uuid, re
 from functools import wraps
-from flask import Flask, request, jsonify, render_template, g
+from flask import Flask, request, jsonify, render_template, g, send_from_directory
 import jwt, bcrypt
+from PIL import Image
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24).hex()
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
 DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'calendar.db')
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 CATEGORIES = {
     'merah': {'id':'merah','label':'Kecemasan / Doktor','color':'#EF4444','icon':'🚨'},
@@ -364,6 +368,88 @@ def delete_user(user_id):
     db.execute("DELETE FROM users WHERE id=?",(user_id,))
     db.commit()
     return jsonify({'message':'User dipadam'})
+
+# ===== IMAGE UPLOAD =====
+def resize_image(file_bytes, max_w=1200, max_h=800, quality=75):
+    """Resize image, convert to WebP, return bytes. Max 500KB."""
+    img = Image.open(io.BytesIO(file_bytes))
+    if img.mode in ('RGBA','P'): img = img.convert('RGB')
+    w, h = img.size
+    ratio = min(max_w/w, max_h/h, 1.0)
+    if ratio < 1.0: img = img.resize((int(w*ratio), int(h*ratio)), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format='WEBP', quality=quality)
+    size = buf.tell()
+    # If still too big, reduce quality
+    if size > 500000:
+        buf.seek(0); buf2 = io.BytesIO()
+        img.save(buf2, format='WEBP', quality=50)
+        if buf2.tell() < size: buf = buf2
+    return buf.getvalue()
+
+def resize_icon(file_bytes, size=256):
+    """Resize icon to square, convert to PNG, return bytes."""
+    img = Image.open(io.BytesIO(file_bytes))
+    if img.mode in ('RGBA','P','LA') and img.mode != 'RGBA': img = img.convert('RGBA')
+    elif img.mode not in ('RGBA','RGB'): img = img.convert('RGB')
+    img = img.resize((size, size), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    return buf.getvalue()
+
+@app.route('/api/upload/bg', methods=['POST'])
+@admin_required
+def upload_bg():
+    if 'file' not in request.files: return jsonify({'error':'Tiada fail'}),400
+    f = request.files['file']
+    if f.filename == '': return jsonify({'error':'Fail kosong'}),400
+    try:
+        data = resize_image(f.read())
+        filename = f"bg_{uuid.uuid4().hex[:8]}.webp"
+        path = os.path.join(UPLOAD_DIR, filename)
+        with open(path, 'wb') as fp: fp.write(data)
+        # Save to settings
+        db = get_db()
+        db.execute("INSERT OR REPLACE INTO settings (key,value) VALUES ('custom_bg',?)",(filename,))
+        db.commit()
+        return jsonify({'message':'Background disimpan','filename':filename,'url':f'/uploads/{filename}'})
+    except Exception as e:
+        return jsonify({'error':f'Gagal proses imej: {str(e)}'}),400
+
+@app.route('/api/upload/icon', methods=['POST'])
+@admin_required
+def upload_icon():
+    if 'file' not in request.files: return jsonify({'error':'Tiada fail'}),400
+    f = request.files['file']
+    if f.filename == '': return jsonify({'error':'Fail kosong'}),400
+    try:
+        data = resize_icon(f.read())
+        filename = f"icon_{uuid.uuid4().hex[:8]}.png"
+        path = os.path.join(UPLOAD_DIR, filename)
+        with open(path, 'wb') as fp: fp.write(data)
+        db = get_db()
+        db.execute("INSERT OR REPLACE INTO settings (key,value) VALUES ('custom_icon',?)",(filename,))
+        db.commit()
+        return jsonify({'message':'Ikon disimpan','filename':filename,'url':f'/uploads/{filename}'})
+    except Exception as e:
+        return jsonify({'error':f'Gagal proses imej: {str(e)}'}),400
+
+@app.route('/api/upload/reset/<kind>', methods=['POST'])
+@admin_required
+def reset_upload(kind):
+    db = get_db()
+    key = f'custom_{kind}'
+    row = db.execute("SELECT value FROM settings WHERE key=?",(key,)).fetchone()
+    if row:
+        old_file = os.path.join(UPLOAD_DIR, row['value'])
+        if os.path.exists(old_file): os.remove(old_file)
+    db.execute("DELETE FROM settings WHERE key=?",(key,))
+    db.commit()
+    return jsonify({'message':f'Custom {kind} direset'})
+
+@app.route('/uploads/<path:filename>')
+def serve_upload(filename):
+    return send_from_directory(UPLOAD_DIR, filename)
 
 # ===== STATIC PAGES =====
 @app.route('/')

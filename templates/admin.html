@@ -112,7 +112,7 @@
   <!-- BACKGROUND -->
   <div class="card">
     <h3>🎨 Latar Belakang (Background)</h3>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Tema untuk login page & calendar</p>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Tema preset untuk login page</p>
     <div style="margin-bottom:14px">
       <label style="font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Login Background</label>
       <div class="bg-grid">
@@ -122,12 +122,22 @@
         <div class="bg-chip" id="bg-sunset" onclick="selectBg('sunset')"><div class="bg-preview sunset"></div>Oren</div>
       </div>
     </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px">
+      <label style="font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">📤 Upload Gambar Sendiri</label>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="file" id="bgUpload" accept="image/*" style="font-size:.8rem" onchange="uploadBg()">
+        <button class="btn btn-out btn-sm" onclick="document.getElementById('bgUpload').click()">📁 Pilih Fail</button>
+        <span id="bgUploadStatus" style="font-size:.75rem;color:var(--green)"></span>
+        <button class="btn btn-red btn-sm" id="bgResetBtn" style="display:none" onclick="resetUpload('bg')">🗑️ Buang Custom</button>
+      </div>
+      <span class="hint">Auto-resize ke WebP. Max 10MB. Background akan replace tema preset.</span>
+    </div>
   </div>
 
   <!-- LOGIN ICON -->
   <div class="card">
     <h3>🖼️ Ikon Login Page</h3>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Ikon yang dipaparkan di halaman log masuk</p>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Ikon emoji preset atau upload gambar sendiri</p>
     <div class="icon-grid" id="iconGrid">
       <div class="icon-chip active" onclick="selectIcon('👨‍👩‍👧‍👦')">👨‍👩‍👧‍👦</div>
       <div class="icon-chip" onclick="selectIcon('👨‍👩‍👦‍👦')">👨‍👩‍👦‍👦</div>
@@ -137,6 +147,16 @@
       <div class="icon-chip" onclick="selectIcon('❤️')">❤️</div>
       <div class="icon-chip" onclick="selectIcon('🌟')">🌟</div>
       <div class="icon-chip" onclick="selectIcon('📅')">📅</div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:10px">
+      <label style="font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">📤 Upload Icon Sendiri</label>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="file" id="iconUpload" accept="image/*" style="font-size:.8rem;display:none" onchange="uploadIcon()">
+        <button class="btn btn-out btn-sm" onclick="document.getElementById('iconUpload').click()">📁 Pilih Fail</button>
+        <span id="iconUploadStatus" style="font-size:.75rem;color:var(--green)"></span>
+        <button class="btn btn-red btn-sm" id="iconResetBtn" style="display:none" onclick="resetUpload('icon')">🗑️ Buang Custom</button>
+      </div>
+      <span class="hint">Auto-resize ke 256px² PNG. Ikon custom akan replace emoji.</span>
     </div>
   </div>
 
@@ -207,6 +227,7 @@ fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
   updateZoneUI();
   updateBgUI();
   updateIconUI();
+  checkCustomUploads(d);
 });
 
 function updateRegToggle(){
@@ -306,6 +327,47 @@ async function deleteUser(){
 }
 
 function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},3000)}
+
+// ===== IMAGE UPLOAD =====
+async function uploadBg(){
+  var file=document.getElementById('bgUpload').files[0];
+  if(!file)return;
+  var fd=new FormData();fd.append('file',file);
+  var r=await fetch('/api/upload/bg',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd}).then(function(r){return r.json()});
+  if(r.message){settings.bg='custom';selectBg('custom');document.getElementById('bgUploadStatus').textContent='✅ '+r.filename+' ('+Math.round(file.size/1024)+'KB)';document.getElementById('bgResetBtn').style.display='inline-flex';toast('✅ Background diupload!')}
+  else toast('❌ '+(r.error||'Gagal'),'error')
+}
+
+async function uploadIcon(){
+  var file=document.getElementById('iconUpload').files[0];
+  if(!file)return;
+  var fd=new FormData();fd.append('file',file);
+  var r=await fetch('/api/upload/icon',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd}).then(function(r){return r.json()});
+  if(r.message){document.getElementById('iconUploadStatus').textContent='✅ '+r.filename;document.getElementById('iconResetBtn').style.display='inline-flex';selectIcon('__custom__');toast('✅ Ikon diupload!')}
+  else toast('❌ '+(r.error||'Gagal'),'error')
+}
+
+async function resetUpload(kind){
+  var r=await fetch('/api/upload/reset/'+kind,{method:'POST',headers:{'Authorization':'Bearer '+token}}).then(function(r){return r.json()});
+  if(r.message){
+    if(kind==='bg'){document.getElementById('bgUpload').value='';document.getElementById('bgUploadStatus').textContent='';document.getElementById('bgResetBtn').style.display='none';settings.bg='default';selectBg('default')}
+    if(kind==='icon'){document.getElementById('iconUpload').value='';document.getElementById('iconUploadStatus').textContent='';document.getElementById('iconResetBtn').style.display='none';selectIcon('👨‍👩‍👧‍👦')}
+    toast('🗑️ Custom '+kind+' dibuang')
+  }else toast('❌ Gagal','error')
+}
+
+// Check for existing custom uploads on load
+function checkCustomUploads(d){
+  if(d.custom_bg){
+    document.getElementById('bgUploadStatus').textContent='✅ '+d.custom_bg;
+    document.getElementById('bgResetBtn').style.display='inline-flex';
+    settings.bg='custom';
+  }
+  if(d.custom_icon){
+    document.getElementById('iconUploadStatus').textContent='✅ '+d.custom_icon;
+    document.getElementById('iconResetBtn').style.display='inline-flex';
+  }
+}
 document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeUserModal()});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeUserModal()});
 </script>
