@@ -136,6 +136,7 @@
     <div class="top-actions">
       <span class="user-pill"><span class="user-dot" id="myDot"></span><span id="myName">...</span></span>
       <a href="/admin" id="adminLink" class="btn btn-out btn-sm" style="display:none">⚙️ ADMIN</a>
+      <button id="settingsBtn" class="btn btn-out btn-sm" style="display:none" onclick="openSettingsPanel()">🔧</button>
       <button class="btn btn-out btn-sm" onclick="logout()">✕</button>
     </div>
   </div>
@@ -172,6 +173,19 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal"><div class="modal" style="max-width:500px">
+  <h3>🔧 TETAPAN</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="fg"><label>Nama Keluarga</label><input type="text" id="sFamilyName"></div>
+    <div class="fg"><label>Subtitle Login</label><input type="text" id="sTagline"></div>
+    <div class="fg"><label>Footer</label><input type="text" id="sFooter"></div>
+    <div class="fg"><label>Tema</label><select id="sTheme"><option value="cyber">💻 Cyber</option><option value="violet">💜 Violet Pulse</option></select></div>
+    <div class="fg"><label>Zon</label><select id="sZone"><option value="B">Zon B (Isnin)</option><option value="A">Zon A (Ahad)</option></select></div>
+  </div>
+  <div class="btn-row"><button type="button" class="btn btn-out btn-sm" onclick="document.getElementById('settingsModal').classList.remove('show')">BATAL</button><button class="btn btn-pri btn-sm" onclick="saveSettingsPanel()">💾 SIMPAN</button></div>
+</div></div>
+
 <script>
 var CATS={merah:{id:'merah',label:'Kecemasan',color:'#ff1744',icon:'🚨'},hijau:{id:'hijau',label:'Cuti',color:'#00e676',icon:'✈️'},kuning:{id:'kuning',label:'Birthday',color:'#ffb300',icon:'🎂'},biru:{id:'biru',label:'Tugasan',color:'#00f3ff',icon:'📋'},ungu:{id:'ungu',label:'Sekolah',color:'#7928ca',icon:'📚'},oren:{id:'oren',label:'Sukan',color:'#ff0080',icon:'⚽'},cuti:{id:'cuti',label:'Cuti Umum',color:'#4dd0e1',icon:'🇲🇾'}};
 var selectedCat='biru';
@@ -182,7 +196,7 @@ var token=localStorage.getItem('token'),user=JSON.parse(localStorage.getItem('us
 if(!token||!user.id)window.location.href='/login';
 document.getElementById('myName').textContent=user.full_name||user.username;
 document.getElementById('myDot').style.background=user.color;document.getElementById('myDot').style.color=user.color;
-if(user.is_admin)document.getElementById('adminLink').style.display='inline-flex';
+if(user.is_admin){document.getElementById('adminLink').style.display='inline-flex';document.getElementById('settingsBtn').style.display='inline-flex'}
 function logout(){localStorage.clear();window.location.href='/login'}
 
 async function api(url,opts){if(!opts)opts={};if(!opts.headers)opts.headers={};opts.headers['Authorization']='Bearer '+token;if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})})}
@@ -215,9 +229,39 @@ function loadAll(){api('/api/users').then(function(r){if(r.ok){var h='';r.data.f
 
 function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}
 function refreshPage(){location.reload()}
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();document.getElementById('bdayModal').classList.remove('show')}});
+// Settings panel (admin only, from calendar page)
+function openSettingsPanel(){
+  fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
+    document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';
+    document.getElementById('sTagline').value=d.brand_tagline||'';
+    document.getElementById('sFooter').value=d.brand_footer||'';
+    document.getElementById('sTheme').value=d.theme||'cyber';
+    document.getElementById('sZone').value=d.zone||'B';
+    document.getElementById('settingsModal').classList.add('show');
+  });
+}
+async function saveSettingsPanel(){
+  var data={
+    family_name:document.getElementById('sFamilyName').value,
+    brand_tagline:document.getElementById('sTagline').value,
+    brand_footer:document.getElementById('sFooter').value,
+    theme:document.getElementById('sTheme').value,
+    zone:document.getElementById('sZone').value
+  };
+  var r=await api('/api/settings',{method:'PUT',body:data});
+  if(r.ok){
+    document.getElementById('settingsModal').classList.remove('show');
+    document.documentElement.setAttribute('data-theme',data.theme);
+    document.getElementById('familyName').textContent=data.family_name;
+    document.title=data.family_name||'Family Calendar';
+    if(calendar)calendar.setOption('firstDay',data.zone==='A'?0:1);
+    toast('✅ TETAPAN DISIMPAN');
+  }else{toast('GAGAL','error')}
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();document.getElementById('bdayModal').classList.remove('show');document.getElementById('settingsModal').classList.remove('show')}});
 document.getElementById('eventModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
 document.getElementById('bdayModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')});
+document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')});
 </script>
 </body>
 </html>
