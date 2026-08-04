@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Team Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#F0FDF4;min-height:100vh;display:flex;align-items:center;justify-content:center}
+    .login-box{background:#fff;padding:40px 32px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);width:100%;max-width:400px;border:1px solid #DCFCE7}
+    .logo{text-align:center;margin-bottom:24px;font-size:1.6rem;font-weight:700;color:#166534}
+    h2{text-align:center;font-size:1.2rem;color:#14532D;margin-bottom:8px}
+    .sub{text-align:center;color:#6B7280;font-size:.85rem;margin-bottom:20px}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:.8rem;font-weight:600;color:#14532D;margin-bottom:4px}
+    .form-group input{width:100%;padding:11px 14px;border:2px solid #DCFCE7;border-radius:10px;font-size:.9rem;font-family:inherit;transition:border .15s}
+    .form-group input:focus{outline:none;border-color:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+    .btn{width:100%;padding:12px;background:#22C55E;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+    .btn:hover{background:#16A34A;transform:translateY(-1px)}
+    .error{background:#FEE2E2;color:#991B1B;padding:10px;border-radius:8px;font-size:.82rem;margin-bottom:12px;display:none;text-align:center}
+    .links{text-align:center;margin-top:14px;font-size:.85rem}
+    .links a{color:#16A34A;text-decoration:none;font-weight:600}
+    .links a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+<div class="login-box">
+  <div class="logo">📅 Team Calendar</div>
+  <h2>Log Masuk</h2>
+  <p class="sub">Masuk untuk lihat & edit planning anda</p>
+  <div class="error" id="error"></div>
+  <form id="loginForm" onsubmit="login(event)">
+    <div class="form-group"><label>Username</label><input type="text" id="username" required placeholder="username"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="password" required placeholder="••••••"></div>
+    <button type="submit" class="btn">🔐 Log Masuk</button>
+  </form>
+  <div class="links">Belum ada akaun? <a href="/register">Daftar di sini</a></div>
+</div>
+<script>
+async function login(e){
+  e.preventDefault();
+  document.getElementById('error').style.display='none';
+  try{
+    var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
+    var d=await r.json();
+    if(!r.ok){document.getElementById('error').textContent=d.error;document.getElementById('error').style.display='block';return}
+    localStorage.setItem('token',d.token);
+    localStorage.setItem('user',JSON.stringify(d.user));
+    window.location.href='/';
+  }catch(err){document.getElementById('error').textContent='Ralat rangkaian';document.getElementById('error').style.display='block'}
+}
+</script>
+</body>
+</html>

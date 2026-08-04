@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Team Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--green:#22C55E;--green-dark:#16A34A;--green-light:#F0FDF4;--border:#DCFCE7;--text:#14532D;--white:#fff;--red:#EF4444}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:var(--green-light);color:var(--text);min-height:100vh}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--white);border-bottom:1px solid var(--border)}
+    .brand{font-size:1.15rem;font-weight:700;color:#166534}
+    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .15s}
+    .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--green-dark)}
+    .btn-out{background:var(--white);color:var(--text);border-color:var(--border)}
+    .btn-red{background:var(--red);color:#fff}
+    .container{max-width:900px;margin:0 auto;padding:20px}
+    .card{background:var(--white);border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:16px;border:1px solid var(--border)}
+    .card h3{font-size:1rem;margin-bottom:14px}
+    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+    th{font-weight:600;background:var(--green-light);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
+    .badge{font-size:.68rem;padding:2px 8px;border-radius:20px;font-weight:600}
+    .badge-admin{background:#FEF3C7;color:#92400E}.badge-user{background:var(--green-light);color:var(--green-dark)}
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;padding:16px}
+    .modal-overlay.show{display:flex}
+    .modal{background:var(--white);border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.12)}
+    .modal h3{font-size:1rem;margin-bottom:14px}
+    .fg{margin-bottom:12px}.fg label{display:block;font-size:.78rem;font-weight:600;margin-bottom:3px}
+    .fg input,.fg select{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.85rem;font-family:inherit}
+    .fg input:focus,.fg select:focus{outline:none;border-color:var(--green)}
+    .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+    .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.82rem;transform:translateY(100px);opacity:0;transition:all .3s}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast-success{background:#059669}.toast-error{background:var(--red)}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">⚙️ Admin — Team Calendar</div>
+  <div style="display:flex;gap:8px">
+    <a href="/" class="btn btn-out">📅 Calendar</a>
+    <a href="#" class="btn btn-out" onclick="logout()">🚪 Keluar</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>👥 Senarai Pengguna</h3>
+      <button class="btn btn-pri" onclick="openUserModal()">➕ Tambah User</button>
+    </div>
+    <table><thead><tr><th>ID</th><th>Username</th><th>Nama</th><th>Warna</th><th>Role</th><th>Daftar</th><th>Tindakan</th></tr></thead>
+    <tbody id="userTable"><tr><td colspan="7" style="text-align:center;color:#9CA3AF">Loading...</td></tr></tbody></table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <h3 id="userModalTitle">Tambah Pengguna</h3>
+    <form onsubmit="saveUser(event)">
+      <input type="hidden" id="userId">
+      <div class="fg"><label>Nama Penuh</label><input type="text" id="uFullName" required></div>
+      <div class="fg"><label>Username</label><input type="text" id="uUsername" required></div>
+      <div class="fg"><label>Password (kosongkan jika tak tukar)</label><input type="password" id="uPassword" minlength="4"></div>
+      <div class="fg"><label>Warna</label><input type="color" id="uColor" value="#22C55E" style="height:40px;padding:4px"></div>
+      <div class="fg"><label>Role</label><select id="uRole"><option value="0">User</option><option value="1">Admin</option></select></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-red" id="btnDeleteUser" style="display:none;margin-right:auto" onclick="deleteUser()">🗑️ Padam</button>
+        <button type="button" class="btn btn-out" onclick="closeUserModal()">Batal</button>
+        <button type="submit" class="btn btn-pri">💾 Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var token=localStorage.getItem('token');
+var user=JSON.parse(localStorage.getItem('user')||'{}');
+if(!token||!user.is_admin){window.location.href='/'}
+
+async function api(url,opts={}){
+  var h=opts.headers||{};h['Authorization']='Bearer '+token;
+  if(opts.body&&typeof opts.body==='object'){h['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
+  return fetch(url,{...opts,headers:h}).then(r=>r.json().then(d=>({ok:r.ok,status:r.status,data:d})));
+}
+
+function logout(){localStorage.clear();window.location.href='/login'}
+
+async function loadUsers(){
+  var r=await api('/api/users');
+  var tbody=document.getElementById('userTable');
+  if(!r.ok){tbody.innerHTML='<tr><td colspan="7">Ralat</td></tr>';return}
+  tbody.innerHTML=r.data.map(function(u){return '<tr><td>'+u.id+'</td><td>'+u.username+'</td><td>'+u.full_name+'</td><td><span class="dot" style="background:'+u.color+'"></span>'+u.color+'</td><td><span class="badge '+(u.is_admin?'badge-admin':'badge-user')+'">'+(u.is_admin?'Admin':'User')+'</span></td><td>'+u.created_at+'</td><td><button class="btn btn-out" onclick="editUser('+u.id+')">✏️</button></td></tr>'}).join('');
+}
+loadUsers();
+
+function openUserModal(){resetModal();document.getElementById('userModalTitle').textContent='Tambah Pengguna';document.getElementById('userModal').classList.add('show')}
+function closeUserModal(){document.getElementById('userModal').classList.remove('show')}
+function resetModal(){document.getElementById('userId').value='';document.getElementById('uFullName').value='';document.getElementById('uUsername').value='';document.getElementById('uPassword').value='';document.getElementById('uColor').value='#22C55E';document.getElementById('uRole').value='0';document.getElementById('btnDeleteUser').style.display='none';document.getElementById('uUsername').disabled=false}
+
+async function editUser(id){
+  var r=await api('/api/users');if(!r.ok)return;
+  var u=r.data.find(function(x){return x.id===id});if(!u)return;
+  resetModal();document.getElementById('userId').value=u.id;document.getElementById('uFullName').value=u.full_name;
+  document.getElementById('uUsername').value=u.username;document.getElementById('uUsername').disabled=true;
+  document.getElementById('uColor').value=u.color;document.getElementById('uRole').value=u.is_admin?'1':'0';
+  document.getElementById('btnDeleteUser').style.display='inline-flex';
+  document.getElementById('userModalTitle').textContent='Edit Pengguna';
+  document.getElementById('userModal').classList.add('show');
+}
+
+async function saveUser(e){
+  e.preventDefault();
+  var id=document.getElementById('userId').value;
+  var data={full_name:document.getElementById('uFullName').value,color:document.getElementById('uColor').value,is_admin:document.getElementById('uRole').value==='1'};
+  var pw=document.getElementById('uPassword').value;if(pw)data.password=pw;
+
+  if(id){
+    var r=await api('/api/users/'+id,{method:'PUT',body:data});
+    if(r.ok){loadUsers();closeUserModal();toast('✅ User dikemaskini')}else toast('❌ '+r.data.error,'error')
+  }else{
+    if(!pw||pw.length<4){toast('❌ Password min 4 aksara','error');return}
+    data.username=document.getElementById('uUsername').value;data.password=pw;
+    var r=await api('/api/register',{method:'POST',body:data});
+    if(r.ok){loadUsers();closeUserModal();toast('✅ User ditambah')}else toast('❌ '+r.data.error,'error')
+  }
+}
+
+async function deleteUser(){
+  var id=document.getElementById('userId').value;
+  if(!confirm('Padam user ini? Semua event user ini juga akan dipadam.'))return;
+  var r=await api('/api/users/'+id,{method:'DELETE'});
+  if(r.ok){loadUsers();closeUserModal();toast('🗑️ User dipadam')}else toast('❌ '+r.data.error,'error')
+}
+
+function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}
+document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeUserModal()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeUserModal()});
+</script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Calendar — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <style>
+    :root{--green:#22C55E;--green-dark:#16A34A;--green-light:#F0FDF4;--border:#DCFCE7;--text:#14532D;--text-muted:#6B7280;--white:#fff;--red:#EF4444;--radius:10px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:var(--green-light);color:var(--text)}
+    .app{max-width:1200px;margin:0 auto;padding:12px 16px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--white);border-radius:var(--radius);box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:12px;flex-wrap:wrap;gap:8px;border:1px solid var(--border)}
+    .brand{font-size:1.2rem;font-weight:700;color:#166534;display:flex;align-items:center;gap:6px}
+    .user-info{display:flex;align-items:center;gap:10px;font-size:.85rem}
+    .user-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid transparent;font-family:inherit;transition:all .15s;text-decoration:none}
+    .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--green-dark)}
+    .btn-out{background:var(--white);color:var(--text);border-color:var(--border)}.btn-out:hover{background:var(--green-light)}
+    .btn-red{background:var(--red);color:#fff}
+    #calendar{margin-top:8px}
+    .fc{font-family:'Inter',sans-serif!important}
+    .fc .fc-toolbar-title{font-size:1.1rem!important;font-weight:700!important;color:var(--text)!important}
+    .fc .fc-button{background:var(--white)!important;border-color:var(--border)!important;color:var(--text)!important;border-radius:8px!important;font-weight:600!important;font-size:.82rem!important;padding:6px 13px!important;text-transform:none!important}
+    .fc .fc-button-primary{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
+    .fc .fc-button-primary:hover{background:var(--green-dark)!important}
+    .fc .fc-today-button{background:var(--green-light)!important}
+    .fc .fc-day-today{background:#ECFDF5!important}
+    .fc .fc-col-header-cell{background:var(--white)!important;padding:8px!important;font-weight:600!important;font-size:.82rem!important;color:var(--text)!important}
+    .fc .fc-timegrid-slot{height:36px!important}
+    .fc .fc-event{cursor:pointer;border-radius:6px!important;border:none!important;padding:3px 6px!important;font-size:.78rem!important;font-weight:500!important}
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;padding:16px}
+    .modal-overlay.show{display:flex}
+    .modal{background:var(--white);border-radius:16px;padding:24px;max-width:460px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.12)}
+    .modal h3{font-size:1.05rem;margin-bottom:14px;color:var(--text)}
+    .modal .fg{margin-bottom:12px}
+    .modal .fg label{display:block;font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:3px}
+    .modal .fg input,.modal .fg textarea,.modal .fg select{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.85rem;font-family:inherit}
+    .modal .fg input:focus,.modal .fg textarea:focus{outline:none;border-color:var(--green)}
+    .modal .fg textarea{resize:vertical;min-height:60px}
+    .modal .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+    .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.82rem;transform:translateY(100px);opacity:0;transition:all .3s}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast-success{background:#059669}.toast-error{background:var(--red)}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:.78rem;color:var(--text-muted);padding:4px 0}
+    .legend-item{display:flex;align-items:center;gap:5px}
+    .legend-dot{width:10px;height:10px;border-radius:50%}
+    @media(max-width:768px){.topbar{flex-direction:column;align-items:flex-start}.fc .fc-toolbar{flex-direction:column!important;gap:8px!important}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">📅 Team Calendar</div>
+    <div class="legend" id="legend"></div>
+    <div class="user-info">
+      <span class="user-dot" id="myColor"></span>
+      <strong id="myName">...</strong>
+      <a href="#" id="adminLink" class="btn btn-out" style="display:none">⚙️ Admin</a>
+      <button class="btn btn-out" onclick="logout()">🚪 Keluar</button>
+    </div>
+  </div>
+  <div id="calendar"></div>
+</div>
+
+<!-- EVENT MODAL -->
+<div class="modal-overlay" id="eventModal">
+  <div class="modal">
+    <h3 id="modalTitle">📝 Acara Baru</h3>
+    <form onsubmit="saveEvent(event)">
+      <input type="hidden" id="eventId">
+      <div class="fg"><label>Tajuk *</label><input type="text" id="evTitle" required placeholder="Cth: Meeting Projek A"></div>
+      <div class="fg"><label>Deskripsi</label><textarea id="evDesc" placeholder="Nota tambahan..."></textarea></div>
+      <div class="fg"><label>Mula *</label><input type="datetime-local" id="evStart" required></div>
+      <div class="fg"><label>Tamat</label><input type="datetime-local" id="evEnd"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-red" id="btnDelete" style="display:none;margin-right:auto" onclick="deleteEvent()">🗑️ Padam</button>
+        <button type="button" class="btn btn-out" onclick="closeModal()">Batal</button>
+        <button type="submit" class="btn btn-pri">💾 Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== AUTH =====
+var token=localStorage.getItem('token');
+var user=JSON.parse(localStorage.getItem('user')||'{}');
+if(!token||!user.id){window.location.href='/login'}
+document.getElementById('myName').textContent=user.full_name||user.username;
+var mc=document.getElementById('myColor');mc.style.background=user.color||'#22C55E';
+if(user.is_admin)document.getElementById('adminLink').style.display='inline-flex';
+
+function logout(){localStorage.clear();window.location.href='/login'}
+
+async function api(url,opts={}){
+  var h=opts.headers||{};h['Authorization']='Bearer '+token;
+  if(opts.body&&typeof opts.body==='object'){h['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
+  return fetch(url,{...opts,headers:h}).then(r=>r.json().then(d=>({ok:r.ok,status:r.status,data:d})));
+}
+
+// ===== CALENDAR =====
+var calendar;
+var allUsers=[];
+document.addEventListener('DOMContentLoaded',function(){
+  loadUsers().then(function(){
+    var el=document.getElementById('calendar');
+    calendar=new FullCalendar.Calendar(el,{
+      initialView:'dayGridMonth',
+      headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek'},
+      height:'auto',
+      locale:'ms',
+      firstDay:1,
+      selectable:true,
+      editable:true,
+      eventDurationEditable:false,
+      events:fetchEvents,
+      select:function(info){openModal(null,info.startStr,info.endStr||info.startStr)},
+      eventClick:function(info){openModal(info.event)},
+      eventDrop:function(info){updateEventFromDrop(info.event)},
+      eventResize:function(info){updateEventFromDrop(info.event)},
+      loading:function(bool){}
+    });
+    calendar.render();
+  });
+});
+
+async function loadUsers(){
+  if(user.is_admin){
+    try{var r=await api('/api/users');if(r.ok)allUsers=r.data}catch(e){}
+  }
+  // Build legend
+  var resp=await api('/api/events?start='+new Date().toISOString().slice(0,7)+'-01');
+  if(resp.ok){
+    var users={};resp.data.forEach(function(e){if(e.userName&&!users[e.userId])users[e.userId]={name:e.userName,color:e.userColor}});
+    var h='';Object.values(users).forEach(function(u){h+='<span class="legend-item"><span class="legend-dot" style="background:'+u.color+'"></span>'+u.name+'</span>'});
+    document.getElementById('legend').innerHTML=h||'<span>Tiada aktiviti bulan ini</span>';
+  }
+}
+
+function fetchEvents(info,successCallback,failureCallback){
+  api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){
+    if(r.ok)successCallback(r.data);else failureCallback(r.data.error);
+  }).catch(function(e){failureCallback(e)});
+}
+
+// ===== MODAL =====
+function openModal(event,startStr,endStr){
+  document.getElementById('eventId').value=event?event.id:'';
+  document.getElementById('modalTitle').textContent=event?'✏️ Edit Acara':'📝 Acara Baru';
+  document.getElementById('evTitle').value=event?event.title:'';
+  document.getElementById('evDesc').value=event?event.extendedProps.description||'':'';
+  document.getElementById('evStart').value=event?event.startStr.slice(0,16):(startStr||'').slice(0,16);
+  document.getElementById('evEnd').value=event?event.endStr?event.endStr.slice(0,16):'':(endStr||'').slice(0,16);
+  document.getElementById('btnDelete').style.display=event?'inline-flex':'none';
+  document.getElementById('eventModal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('eventModal').classList.remove('show')}
+
+async function saveEvent(e){
+  e.preventDefault();
+  var id=document.getElementById('eventId').value;
+  var data={title:document.getElementById('evTitle').value,description:document.getElementById('evDesc').value,start:document.getElementById('evStart').value,end:document.getElementById('evEnd').value||document.getElementById('evStart').value};
+  data.color=user.color||'#22C55E';
+  var r;
+  if(id){r=await api('/api/events/'+id,{method:'PUT',body:data})}
+  else{r=await api('/api/events',{method:'POST',body:data})}
+  if(r.ok){calendar.refetchEvents();closeModal();loadUsers();toast('✅ Disimpan!')}
+  else toast('❌ '+r.data.error,'error')
+}
+
+async function deleteEvent(){
+  if(!confirm('Padam acara ini?'))return;
+  var id=document.getElementById('eventId').value;
+  var r=await api('/api/events/'+id,{method:'DELETE'});
+  if(r.ok){calendar.refetchEvents();closeModal();loadUsers();toast('🗑️ Dipadam')}
+  else toast('❌ '+r.data.error,'error')
+}
+
+async function updateEventFromDrop(event){
+  var r=await api('/api/events/'+event.id,{method:'PUT',body:{start:event.start.toISOString(),end:event.end?event.end.toISOString():event.start.toISOString()}});
+  if(!r.ok){calendar.refetchEvents();toast('❌ '+r.data.error,'error')}
+}
+
+// ===== TOAST =====
+function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}
+
+// Close modal on escape
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()});
+document.getElementById('eventModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+</script>
+</body>
+</html>
