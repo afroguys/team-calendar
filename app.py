@@ -73,8 +73,9 @@ def init_db():
             db.execute("INSERT OR IGNORE INTO settings VALUES ('login_icon','👨‍👩‍👧‍👦')")
             db.execute("INSERT OR IGNORE INTO settings VALUES ('theme','system')")
             db.execute("INSERT OR IGNORE INTO settings VALUES ('calendar_bg','default')")
-            db.execute("INSERT OR IGNORE INTO settings VALUES ('brand_tagline','◆ SISTEM KALENDAR KELUARGA ◆')")
-            db.execute("INSERT OR IGNORE INTO settings VALUES ('brand_footer','◆ FAMILY CALENDAR v2.0 ◆')")
+        # Ensure new settings exist (for DBs created before these were added)
+        db.execute("INSERT OR IGNORE INTO settings VALUES ('brand_tagline','◆ SISTEM KALENDAR KELUARGA ◆')")
+        db.execute("INSERT OR IGNORE INTO settings VALUES ('brand_footer','◆ FAMILY CALENDAR v2.0 ◆')")
         # Default admin
         if not db.execute("SELECT id FROM users WHERE username='admin'").fetchone():
             pw = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt()).decode()
