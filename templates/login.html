@@ -87,7 +87,7 @@
   <div class="login-card">
     <div class="family-icon" id="familyIcon">👨‍👩‍👧‍👦</div>
     <div class="family-name" id="familyName">KELUARGA</div>
-    <div class="family-sub">◆ SISTEM KALENDAR KELUARGA ◆</div>
+    <div class="family-sub" id="familySub">◆ SISTEM KALENDAR KELUARGA ◆</div>
     <div class="error" id="error"></div>
     <form id="loginForm" onsubmit="login(event)">
       <div class="form-group"><label>ID</label><input type="text" id="username" required placeholder="MASUKKAN USERNAME"></div>
@@ -96,7 +96,7 @@
       <div class="spinner" id="spinner"></div>
     </form>
   </div>
-  <div class="credits">◆ FAMILY CALENDAR v2.0 ◆</div>
+  <div class="credits" id="creditsFooter">◆ FAMILY CALENDAR v2.0 ◆</div>
 </div>
 
 <script>
@@ -106,6 +106,8 @@ fetch('/api/settings').then(r=>r.json()).then(function(d){
   document.title=(d.family_name||'Keluarga')+' — Log Masuk';
   if(d.custom_icon)document.getElementById('familyIcon').innerHTML='<img src="/uploads/'+d.custom_icon+'" alt="icon">';
   else document.getElementById('familyIcon').textContent=d.login_icon||'👨‍👩‍👧‍👦';
+  document.getElementById('familySub').textContent=d.brand_tagline||'◆ SISTEM KALENDAR KELUARGA ◆';
+  document.getElementById('creditsFooter').textContent=d.brand_footer||'◆ FAMILY CALENDAR v2.0 ◆';
 }).catch(function(){});
 
 async function login(e){

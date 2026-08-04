@@ -85,6 +85,8 @@
     <div class="form-grid">
       <div class="fg"><label>Nama Keluarga</label><input type="text" id="sFamilyName" placeholder="Keluarga Saya"><span class="hint">Dipapar di login & header</span></div>
       <div class="fg"><label>Title</label><input type="text" id="sBrandTitle" placeholder="Family Calendar"></div>
+      <div class="fg"><label>Subtitle Login</label><input type="text" id="sTagline" placeholder="◆ SISTEM KALENDAR KELUARGA ◆"><span class="hint">Ayat bawah nama di login page</span></div>
+      <div class="fg"><label>Footer</label><input type="text" id="sFooter" placeholder="◆ FAMILY CALENDAR v2.0 ◆"><span class="hint">Ayat kecil di bawah login</span></div>
     </div>
     <div class="form-grid" style="margin-top:8px">
       <div class="fg"><label>Password Default</label><input type="text" id="sDefaultPass" value="member123"></div>
@@ -182,6 +184,8 @@ function logout(){localStorage.clear();window.location.href='/login'}
 fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
   settings.allowRegister=d.allow_register==='1';settings.zone=d.zone||'B';settings.loginBg=d.login_bg||'default';settings.loginIcon=d.login_icon||'👨‍👩‍👧‍👦';settings.waEnabled=d.wa_enabled==='1';settings.theme=d.theme||'cyber';
   document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
+  document.getElementById('sTagline').value=d.brand_tagline||'◆ SISTEM KALENDAR KELUARGA ◆';
+  document.getElementById('sFooter').value=d.brand_footer||'◆ FAMILY CALENDAR v2.0 ◆';
   document.getElementById('waApiToken').value=d.wa_api_token||'';document.getElementById('waGroupId').value=d.wa_group_id||'';document.getElementById('waPhone1').value=d.wa_phone_1||'';document.getElementById('waPhone2').value=d.wa_phone_2||'';document.getElementById('waPhone3').value=d.wa_phone_3||'';document.getElementById('waReminderHour').value=d.wa_reminder_hour||'7';
   document.getElementById('toggleRegister').classList.toggle('on',settings.allowRegister);document.getElementById('regLabel').textContent=settings.allowRegister?'BUKA':'TUTUP';
   document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF';document.getElementById('waLabel').style.color=settings.waEnabled?'var(--cyber-neon)':'var(--cyber-pink)';
@@ -197,7 +201,7 @@ function selectBg(bg){settings.loginBg=bg;document.querySelectorAll('.bg-chip').
 function selectIcon(icon){settings.loginIcon=icon;document.querySelectorAll('.icon-chip').forEach(function(c){c.classList.toggle('active',c.textContent===icon)})}
 
 async function saveAllSettings(){
-  await api('/api/settings',{method:'PUT',body:{family_name:document.getElementById('sFamilyName').value,brand_title:document.getElementById('sBrandTitle').value,allow_register:settings.allowRegister?'1':'0',zone:settings.zone,theme:settings.theme,login_bg:settings.loginBg,login_icon:settings.loginIcon,wa_enabled:settings.waEnabled?'1':'0',wa_api_token:document.getElementById('waApiToken').value,wa_group_id:document.getElementById('waGroupId').value,wa_phone_1:document.getElementById('waPhone1').value,wa_phone_2:document.getElementById('waPhone2').value,wa_phone_3:document.getElementById('waPhone3').value,wa_reminder_hour:document.getElementById('waReminderHour').value||'7'}});
+  await api('/api/settings',{method:'PUT',body:{family_name:document.getElementById('sFamilyName').value,brand_title:document.getElementById('sBrandTitle').value,brand_tagline:document.getElementById('sTagline').value,brand_footer:document.getElementById('sFooter').value,allow_register:settings.allowRegister?'1':'0',zone:settings.zone,theme:settings.theme,login_bg:settings.loginBg,login_icon:settings.loginIcon,wa_enabled:settings.waEnabled?'1':'0',wa_api_token:document.getElementById('waApiToken').value,wa_group_id:document.getElementById('waGroupId').value,wa_phone_1:document.getElementById('waPhone1').value,wa_phone_2:document.getElementById('waPhone2').value,wa_phone_3:document.getElementById('waPhone3').value,wa_reminder_hour:document.getElementById('waReminderHour').value||'7'}});
   toast('TETAPAN DISIMPAN');
 }
 
