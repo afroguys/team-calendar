@@ -1,183 +1,200 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="ms" data-theme="system">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Family Calendar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <style>
-    :root{
+    /* ===== THEME SYSTEM ===== */
+    :root,[data-theme="light"]{
+      --bg:#F8FAFC;--surface:#FFFFFF;--surface-glass:rgba(255,255,255,.75);--text:#1E293B;--text2:#64748B;--text3:#94A3B8;
+      --border:rgba(226,232,240,.6);--border-solid:#E2E8F0;--shadow:0 1px 3px rgba(0,0,0,.04);--shadow-md:0 4px 16px rgba(0,0,0,.06);
+      --glass-bg:rgba(255,255,255,.7);--glass-border:rgba(255,255,255,.5);--glass-blur:16px;
       --green:#22C55E;--gdark:#16A34A;--red:#EF4444;--yellow:#EAB308;--blue:#3B82F6;--purple:#8B5CF6;--orange:#F97316;
-      --bg:#F8FAFC;--card:#fff;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--radius:10px
+      --fc-bg:#fff;--fc-border:#E2E8F0;--fc-today:#F0FDF4;--fc-header:#fff;--fc-text:#1E293B;--fc-event-bg:#fff;
+      --noise-opacity:0.01;
     }
+    [data-theme="dark"]{
+      --bg:#0F172A;--surface:#1E293B;--surface-glass:rgba(30,41,59,.8);--text:#E2E8F0;--text2:#94A3B8;--text3:#64748B;
+      --border:rgba(51,65,85,.6);--border-solid:#334155;--shadow:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 16px rgba(0,0,0,.4);
+      --glass-bg:rgba(30,41,59,.75);--glass-border:rgba(51,65,85,.5);--glass-blur:20px;
+      --green:#34D399;--gdark:#22C55E;--red:#F87171;--yellow:#FBBF24;--blue:#60A5FA;--purple:#A78BFA;--orange:#FB923C;
+      --fc-bg:#1E293B;--fc-border:#334155;--fc-today:rgba(34,197,94,.08);--fc-header:#1E293B;--fc-text:#E2E8F0;--fc-event-bg:#1E293B;
+      --noise-opacity:0.02;
+    }
+    @media(prefers-color-scheme:dark){[data-theme="system"]{
+      --bg:#0F172A;--surface:#1E293B;--surface-glass:rgba(30,41,59,.8);--text:#E2E8F0;--text2:#94A3B8;--text3:#64748B;
+      --border:rgba(51,65,85,.6);--border-solid:#334155;--shadow:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 16px rgba(0,0,0,.4);
+      --glass-bg:rgba(30,41,59,.75);--glass-border:rgba(51,65,85,.5);--glass-blur:20px;
+      --green:#34D399;--gdark:#22C55E;--red:#F87171;--yellow:#FBBF24;--blue:#60A5FA;--purple:#A78BFA;--orange:#FB923C;
+      --fc-bg:#1E293B;--fc-border:#334155;--fc-today:rgba(34,197,94,.08);--fc-header:#1E293B;--fc-text:#E2E8F0;--fc-event-bg:#1E293B;
+      --noise-opacity:0.02;
+    }}
+
+    .noise-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--noise-opacity);
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:256px 256px}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-    .app-layout{display:grid;grid-template-columns:1fr 340px;grid-template-rows:auto 1fr;height:100vh;gap:0}
-    .topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
-    .brand{font-size:1.1rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
-    .brand .icon{font-size:1.3rem}
-    .top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .user-pill{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;padding:5px 12px;border-radius:20px;background:var(--bg)}
+    .app-layout{display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;height:100vh;gap:0;position:relative;z-index:1}
+    .topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface-glass);backdrop-filter:blur(var(--glass-blur));border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px}
+    .brand{font-size:1.05rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px}
+    .top-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .user-pill{display:flex;align-items:center;gap:5px;font-size:.8rem;font-weight:600;padding:5px 10px;border-radius:20px;background:var(--surface);border:1px solid var(--border)}
     .user-dot{width:10px;height:10px;border-radius:50%}
-    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 13px;border-radius:8px;font-weight:600;font-size:.8rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .12s}
-    .btn-sm{padding:5px 10px;font-size:.72rem}
-    .btn-pri{background:var(--green);color:#fff;border-color:var(--green)}.btn-pri:hover{background:var(--gdark)}
-    .btn-out{background:var(--card);color:var(--text);border-color:var(--border)}.btn-out:hover{background:#F1F5F9}
+    .btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;font-weight:600;font-size:.78rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .12s}
+    .btn-sm{padding:4px 8px;font-size:.7rem}
+    .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--gdark)}
+    .btn-out{background:var(--surface);color:var(--text);border-color:var(--border)}.btn-out:hover{background:var(--bg)}
     .btn-red{background:var(--red);color:#fff}
-    
-    .main-content{padding:8px;overflow-y:auto}
-    .side-panel{background:var(--card);border-left:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px}
 
-    /* FullCalendar overrides */
-    .fc{font-family:'Inter',sans-serif!important;font-size:.82rem!important}
-    .fc .fc-toolbar-title{font-size:1rem!important;font-weight:700!important}
-    .fc .fc-button{padding:5px 10px!important;font-size:.75rem!important;font-weight:600!important;border-radius:8px!important;text-transform:none!important}
-    .fc .fc-button-primary{background:var(--green)!important;border-color:var(--green)!important}
-    .fc .fc-today-button{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
-    .fc .fc-day-today{background:#F0FDF4!important}
-    .fc .fc-col-header-cell{background:var(--card)!important;font-weight:600!important;font-size:.75rem!important;padding:6px!important;text-transform:uppercase}
-    .fc .fc-event{border-radius:6px!important;border:none!important;padding:2px 6px!important;font-size:.72rem!important;font-weight:500!important;cursor:pointer!important}
-    .fc .fc-timegrid-slot{height:32px!important}
-    .fc .fc-event:hover{filter:brightness(1.1)}
-    /* Holiday events */
-    .holiday-event{border-radius:3px!important;padding:1px 5px!important;font-size:.65rem!important;opacity:.85;border-left:3px solid #6B7280!important;background:#F3F4F6!important;color:#374151!important}
+    .main-content{padding:6px;overflow-y:auto}
+    .side-panel{background:var(--bg);border-left:1px solid var(--border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+
+    /* Glass side sections (bento + novacraft pattern) */
+    .side-section{background:var(--surface-glass);backdrop-filter:blur(var(--glass-blur));border-radius:10px;padding:12px 14px;border:1px solid var(--border);box-shadow:var(--shadow);transition:all .2s}
+    .side-section:hover{box-shadow:var(--shadow-md)}
+    .side-section h3{font-size:.82rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px;color:var(--text)}
+
+    /* FullCalendar theme adaptation */
+    .fc{font-family:'Inter',sans-serif!important;font-size:.8rem!important}
+    .fc .fc-toolbar-title{font-size:.95rem!important;font-weight:700!important;color:var(--text)!important}
+    .fc .fc-button{padding:5px 10px!important;font-size:.72rem!important;font-weight:600!important;border-radius:8px!important;text-transform:none!important;background:var(--surface)!important;border-color:var(--border)!important;color:var(--text)!important}
+    .fc .fc-button-primary{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
+    .fc .fc-today-button{background:var(--green)!important;color:#fff!important}
+    .fc .fc-day-today{background:var(--fc-today)!important}
+    .fc .fc-col-header-cell{background:var(--fc-header)!important;font-weight:600!important;font-size:.72rem!important;padding:6px!important;text-transform:uppercase;color:var(--text2)!important;border-color:var(--border)!important}
+    .fc .fc-scrollgrid,.fc .fc-scrollgrid td,.fc .fc-scrollgrid th{border-color:var(--fc-border)!important}
+    .fc .fc-daygrid-day,.fc .fc-timegrid-slot{background:var(--fc-bg)!important}
+    .fc .fc-daygrid-day-number,.fc .fc-timegrid-slot-label{color:var(--text)!important}
+    .fc .fc-timegrid-slot{height:30px!important;border-color:var(--border)!important}
+    .fc .fc-event{border-radius:6px!important;border:none!important;padding:2px 6px!important;font-size:.7rem!important;font-weight:500!important;cursor:pointer!important}
+    .fc .fc-event:hover{filter:brightness(1.15)!important}
+    .holiday-event{border-radius:3px!important;padding:1px 5px!important;font-size:.63rem!important;opacity:.8;border-left:3px solid #6B7280!important;background:var(--bg)!important;color:var(--text2)!important}
     .holiday-event:hover{opacity:1!important;filter:none!important}
+    .fc .fc-popover{background:var(--surface)!important;border-color:var(--border)!important}
 
-    /* Side panels */
-    .side-section{background:var(--bg);border-radius:var(--radius);padding:12px 14px;border:1px solid var(--border)}
-    .side-section h3{font-size:.85rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-    .side-section h3 .ico{font-size:1rem}
-    
-    /* Birthday countdown */
-    .bday-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+    /* Birthday + Chore items */
+    .bday-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:.78rem}
     .bday-item:last-child{border-bottom:none}
-    .bday-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;color:#fff;flex-shrink:0}
-    .bday-info{flex:1}
-    .bday-info strong{display:block;font-size:.82rem}
-    .bday-info span{font-size:.7rem;color:var(--muted)}
-    .bday-countdown{background:var(--yellow);color:#92400E;padding:3px 8px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap}
-    .bday-today{background:var(--red)!important;color:#fff!important;animation:pulse 1.5s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+    .bday-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;color:#fff;flex-shrink:0}
+    .bday-info{flex:1}.bday-info strong{display:block;font-size:.8rem;color:var(--text)}.bday-info span{font-size:.68rem;color:var(--text2)}
+    .bday-countdown{background:var(--yellow);color:#92400E;padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:700;white-space:nowrap}
+    .bday-today{background:var(--red)!important;color:#fff!important;animation:pulse 1.5s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
 
-    /* Chore board */
-    .chore-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+    .chore-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.78rem}
     .chore-item:last-child{border-bottom:none}
-    .chore-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:transparent;transition:all .12s}
+    .chore-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:transparent;transition:all .12s}
     .chore-check.done{background:var(--green);border-color:var(--green);color:#fff}
-    .chore-name{flex:1}
-    .chore-name.done{text-decoration:line-through;color:var(--muted)}
-    .chore-assigned{font-size:.68rem;color:var(--muted)}
-    .chore-del{color:var(--muted);cursor:pointer;font-size:.8rem;background:none;border:none;padding:2px;opacity:0;transition:opacity .12s}
-    .chore-item:hover .chore-del{opacity:1}
+    .chore-name{flex:1}.chore-name.done{text-decoration:line-through;color:var(--text2)}
+    .chore-assigned{font-size:.65rem;color:var(--text3)}
+    .chore-del{color:var(--text3);cursor:pointer;font-size:.75rem;background:none;border:none;padding:2px;opacity:0;transition:opacity .12s}.chore-item:hover .chore-del{opacity:1}
 
-    /* Legend */
-    .legend{display:flex;flex-wrap:wrap;gap:6px}
-    .legend-tag{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:var(--card);font-size:.68rem;font-weight:600;border:1px solid var(--border)}
+    .legend{display:flex;flex-wrap:wrap;gap:5px}
+    .legend-tag{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:var(--surface);font-size:.66rem;font-weight:600;border:1px solid var(--border);color:var(--text2)}
+
+    /* Theme toggle */
+    .theme-btns{display:flex;gap:2px;background:var(--bg);padding:2px;border-radius:8px;border:1px solid var(--border)}
+    .theme-btn{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--text3);transition:all .12s}
+    .theme-btn:hover{background:var(--surface)}.theme-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.06)}
 
     /* Modal */
-    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:16px}
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;padding:16px}
     .modal-overlay.show{display:flex}
-    .modal{background:var(--card);border-radius:14px;padding:22px;max-width:460px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
-    .modal h3{font-size:1rem;margin-bottom:14px}
-    .fg{margin-bottom:10px}.fg label{display:block;font-size:.75rem;font-weight:600;margin-bottom:3px;color:var(--text)}
-    .fg input,.fg textarea,.fg select{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.84rem;font-family:inherit}
+    .modal{background:var(--surface);border-radius:14px;padding:20px;max-width:440px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;border:1px solid var(--border)}
+    .modal h3{font-size:.95rem;margin-bottom:12px;color:var(--text)}
+    .fg{margin-bottom:10px}.fg label{display:block;font-size:.73rem;font-weight:600;margin-bottom:3px;color:var(--text)}
+    .fg input,.fg textarea,.fg select{width:100%;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;background:var(--surface);color:var(--text)}
     .fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--green)}
-    .fg textarea{resize:vertical;min-height:55px}
-    .category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
-    .cat-chip{text-align:center;padding:8px 4px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-size:.7rem;font-weight:600;transition:all .12s;background:var(--bg)}
-    .cat-chip:hover{border-color:var(--muted)}
-    .cat-chip.selected{opacity:1;transform:scale(1.03)}
-    .cat-chip .cat-ico{display:block;font-size:1.2rem;margin-bottom:2px}
+    .fg textarea{resize:vertical;min-height:50px}
+    .category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}
+    .cat-chip{text-align:center;padding:7px 3px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-size:.68rem;font-weight:600;transition:all .12s;background:var(--bg);color:var(--text)}
+    .cat-chip:hover{border-color:var(--text3)}.cat-chip.selected{opacity:1;transform:scale(1.03)}
+    .cat-chip .cat-ico{display:block;font-size:1.1rem;margin-bottom:1px}
     .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
-    .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.82rem;transform:translateY(100px);opacity:0;transition:all .3s}
-    .toast.show{transform:translateY(0);opacity:1}
-    .toast-success{background:#059669}.toast-error{background:var(--red)}
+    .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.8rem;transform:translateY(100px);opacity:0;transition:all .3s}
+    .toast.show{transform:translateY(0);opacity:1}.toast-success{background:#059669}.toast-error{background:var(--red)}
 
     @media(max-width:900px){
       .app-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
-      .side-panel{flex-direction:row;flex-wrap:wrap;gap:8px;padding:10px;max-height:40vh;overflow-y:auto;border-left:none;border-top:1px solid var(--border)}
-      .side-section{flex:1;min-width:200px}
-      .category-grid{grid-template-columns:repeat(2,1fr)}
+      .side-panel{flex-direction:row;flex-wrap:wrap;gap:6px;padding:8px;max-height:35vh;overflow-y:auto;border-left:none;border-top:1px solid var(--border)}
+      .side-section{flex:1;min-width:180px}.category-grid{grid-template-columns:repeat(2,1fr)}
     }
   </style>
 </head>
 <body>
 
+<div class="noise-overlay"></div>
+
 <div class="app-layout">
-  <!-- TOP BAR -->
   <div class="topbar">
-    <div class="brand"><span class="icon">👨‍👩‍👧‍👦</span><span id="familyName">Family Calendar</span></div>
+    <div class="brand">👨‍👩‍👧‍👦 <span id="familyName">Family Calendar</span></div>
     <div class="legend" id="legend"></div>
     <div class="top-actions">
       <span class="user-pill"><span class="user-dot" id="myDot"></span><span id="myName">...</span></span>
       <a href="/admin" id="adminLink" class="btn btn-out btn-sm" style="display:none">⚙️ Admin</a>
+      <div class="theme-btns" id="themeBtns">
+        <button class="theme-btn" title="Sistem" onclick="setTheme('system')">💻</button>
+        <button class="theme-btn" title="Terang" onclick="setTheme('light')">☀️</button>
+        <button class="theme-btn" title="Gelap" onclick="setTheme('dark')">🌙</button>
+      </div>
       <button class="btn btn-out btn-sm" onclick="logout()">🚪</button>
     </div>
   </div>
 
-  <!-- MAIN CALENDAR -->
   <div class="main-content" id="calendar"></div>
 
-  <!-- SIDE PANEL -->
   <div class="side-panel">
-    <!-- Countdown -->
-    <div class="side-section">
-      <h3><span class="ico">🎂</span>Countdown Hari Lahir</h3>
-      <div id="bdayList"><span style="font-size:.75rem;color:var(--muted)">Loading...</span></div>
-      <button class="btn btn-out btn-sm" onclick="document.getElementById('bdayModal').classList.add('show')" style="margin-top:8px;width:100%;justify-content:center">➕ Tambah</button>
-    </div>
-    <!-- Chore Board -->
-    <div class="side-section">
-      <h3><span class="ico">📋</span>Papan Tugasan</h3>
-      <div id="choreList"><span style="font-size:.75rem;color:var(--muted)">Loading...</span></div>
-      <form onsubmit="addChore(event)" style="display:flex;gap:6px;margin-top:8px">
-        <input type="text" id="choreNew" placeholder="Tugasan baru..." style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;font-family:inherit">
-        <button class="btn btn-pri btn-sm">+</button>
-      </form>
-    </div>
+    <div class="side-section"><h3>🎂 Countdown Hari Lahir</h3><div id="bdayList"><span style="font-size:.72rem;color:var(--text3)">Loading...</span></div>
+      <button class="btn btn-out btn-sm" onclick="document.getElementById('bdayModal').classList.add('show')" style="margin-top:6px;width:100%;justify-content:center">➕ Tambah</button></div>
+    <div class="side-section"><h3>📋 Papan Tugasan</h3><div id="choreList"><span style="font-size:.72rem;color:var(--text3)">Loading...</span></div>
+      <form onsubmit="addChore(event)" style="display:flex;gap:5px;margin-top:6px">
+        <input type="text" id="choreNew" placeholder="Tugasan baru..." style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:.76rem;font-family:inherit;background:var(--surface);color:var(--text)">
+        <button class="btn btn-pri btn-sm">+</button></form></div>
   </div>
 </div>
 
 <!-- EVENT MODAL -->
-<div class="modal-overlay" id="eventModal">
-  <div class="modal">
-    <h3 id="modalTitle">📝 Acara Baru</h3>
-    <form onsubmit="saveEvent(event)">
-      <input type="hidden" id="eventId">
-      <div class="fg"><label>Tajuk *</label><input type="text" id="evTitle" required></div>
-      <div class="fg"><label>Deskripsi</label><textarea id="evDesc"></textarea></div>
-      <div class="fg"><label>Mula *</label><input type="datetime-local" id="evStart" required></div>
-      <div class="fg"><label>Tamat</label><input type="datetime-local" id="evEnd"></div>
-      <label style="font-size:.75rem;font-weight:600;margin-bottom:4px;display:block">Kategori Warna</label>
-      <div class="category-grid" id="catGrid"></div>
-      <div class="btn-row">
-        <button type="button" class="btn btn-red btn-sm" id="btnDelete" style="display:none;margin-right:auto" onclick="deleteEvent()">🗑️</button>
-        <button type="button" class="btn btn-out btn-sm" onclick="closeModal()">Batal</button>
-        <button type="submit" class="btn btn-pri btn-sm">💾 Simpan</button>
-      </div>
-    </form>
-  </div>
-</div>
+<div class="modal-overlay" id="eventModal"><div class="modal">
+  <h3 id="modalTitle">📝 Acara Baru</h3>
+  <form onsubmit="saveEvent(event)"><input type="hidden" id="eventId">
+    <div class="fg"><label>Tajuk *</label><input type="text" id="evTitle" required></div>
+    <div class="fg"><label>Deskripsi</label><textarea id="evDesc"></textarea></div>
+    <div class="fg"><label>Mula *</label><input type="datetime-local" id="evStart" required></div>
+    <div class="fg"><label>Tamat</label><input type="datetime-local" id="evEnd"></div>
+    <label style="font-size:.72rem;font-weight:600;margin-bottom:4px;display:block;color:var(--text)">Kategori Warna</label>
+    <div class="category-grid" id="catGrid"></div>
+    <div class="btn-row"><button type="button" class="btn btn-red btn-sm" id="btnDelete" style="display:none;margin-right:auto" onclick="deleteEvent()">🗑️</button>
+      <button type="button" class="btn btn-out btn-sm" onclick="closeModal()">Batal</button>
+      <button type="submit" class="btn btn-pri btn-sm">💾 Simpan</button></div>
+  </form>
+</div></div>
 
 <!-- BIRTHDAY MODAL -->
-<div class="modal-overlay" id="bdayModal">
-  <div class="modal">
-    <h3>🎂 Tambah Hari Lahir</h3>
-    <form onsubmit="addBirthday(event)">
-      <div class="fg"><label>Nama *</label><input type="text" id="bdName" required></div>
-      <div class="fg"><label>Tarikh Lahir *</label><input type="date" id="bdDate" required></div>
-      <div class="fg"><label>Nota (hadiah/cadangan)</label><input type="text" id="bdNote"></div>
-      <div class="btn-row">
-        <button type="button" class="btn btn-out btn-sm" onclick="document.getElementById('bdayModal').classList.remove('show')">Batal</button>
-        <button type="submit" class="btn btn-pri btn-sm">💾 Simpan</button>
-      </div>
-    </form>
-  </div>
-</div>
+<div class="modal-overlay" id="bdayModal"><div class="modal"><h3>🎂 Tambah Hari Lahir</h3>
+  <form onsubmit="addBirthday(event)"><div class="fg"><label>Nama *</label><input type="text" id="bdName" required></div>
+    <div class="fg"><label>Tarikh Lahir *</label><input type="date" id="bdDate" required></div>
+    <div class="fg"><label>Nota</label><input type="text" id="bdNote"></div>
+    <div class="btn-row"><button type="button" class="btn btn-out btn-sm" onclick="document.getElementById('bdayModal').classList.remove('show')">Batal</button>
+      <button type="submit" class="btn btn-pri btn-sm">💾 Simpan</button></div>
+  </form>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== THEME =====
+var savedTheme=localStorage.getItem('fc_theme')||'system';
+function setTheme(t){
+  savedTheme=t;localStorage.setItem('fc_theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+  var btns=document.querySelectorAll('.theme-btn');
+  btns.forEach(function(b,i){b.classList.toggle('active',(i===0&&t==='system')||(i===1&&t==='light')||(i===2&&t==='dark'))});
+  if(calendar)calendar.refetchEvents();
+}
+setTheme(savedTheme);
+
 // ===== CATEGORIES =====
 var CATS={
   merah:{id:'merah',label:'Kecemasan / Doktor',color:'#EF4444',icon:'🚨'},
@@ -189,195 +206,124 @@ var CATS={
   cuti:{id:'cuti',label:'Cuti Umum / Sekolah',color:'#6B7280',icon:'🇲🇾'}
 };
 var selectedCat='hijau';
-
 function renderCatGrid(active){
-  var h=''; var cats=Object.values(CATS);
-  cats.forEach(function(c){
+  var h='';Object.values(CATS).forEach(function(c){
     h+='<div class="cat-chip'+(active===c.id?' selected':'')+'" style="background:'+c.color+'15;border-color:'+(active===c.id?c.color:'var(--border)')+'" onclick="selectCat(\''+c.id+'\')"><span class="cat-ico">'+c.icon+'</span>'+c.label+'</div>';
-  });
-  document.getElementById('catGrid').innerHTML=h;
+  });document.getElementById('catGrid').innerHTML=h
 }
-
 function selectCat(id){selectedCat=id;renderCatGrid(id)}
 
 // ===== AUTH =====
-var token=localStorage.getItem('token');
-var user=JSON.parse(localStorage.getItem('user')||'{}');
+var token=localStorage.getItem('token'),user=JSON.parse(localStorage.getItem('user')||'{}');
 if(!token||!user.id)window.location.href='/login';
 document.getElementById('myName').textContent=user.full_name||user.username;
-var md=document.getElementById('myDot');md.style.background=user.color||'#3B82F6';
+document.getElementById('myDot').style.background=user.color||'#3B82F6';
 if(user.is_admin)document.getElementById('adminLink').style.display='inline-flex';
-
 function logout(){localStorage.clear();window.location.href='/login'}
 
 async function api(url,opts){
-  if(!opts)opts={};if(!opts.headers)opts.headers={};
-  opts.headers['Authorization']='Bearer '+token;
+  if(!opts)opts={};if(!opts.headers)opts.headers={};opts.headers['Authorization']='Bearer '+token;
   if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
   return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})});
 }
 
-// ===== CALENDAR =====
 var calendar;
 document.addEventListener('DOMContentLoaded',function(){
-  loadSettings();
-  loadAll();
-
+  loadSettings();loadAll();
   calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     initialView:'dayGridMonth',headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek'},
     height:'100%',locale:'ms',firstDay:1,selectable:true,editable:true,eventDurationEditable:false,
     events:fetchEvents,
     select:function(info){openEventModal(null,info.startStr,info.endStr||info.startStr)},
     eventClick:function(info){
-      var cat=info.event.extendedProps.category;
-      if(cat==='cuti'){
-        // Holiday — show info toast instead of edit modal
-        toast(info.event.title+' — '+info.event.extendedProps.description,'success');
-        return;
-      }
-      openEventModal(info.event)
-    },
+      if(info.event.extendedProps.category==='cuti'){toast(info.event.title+' — '+info.event.extendedProps.description,'success');return}
+      openEventModal(info.event)},
     eventDrop:function(info){updateFromDrop(info.event)},
     eventResize:function(info){updateFromDrop(info.event)},
     eventClassNames:function(arg){return arg.event.extendedProps.category==='cuti'?['holiday-event']:[]}
-  });
-  calendar.render();
-  renderCatGrid('hijau');
+  });calendar.render();renderCatGrid('hijau');
 });
 
 async function loadSettings(){
   try{var r=await fetch('/api/settings').then(function(r){return r.json()});
     document.getElementById('familyName').textContent=r.family_name||'Family Calendar';
     document.title=(r.family_name||'Family')+' Calendar';
-    // Zone-aware first day
-    var zone=r.zone||'B';
-    var firstDay=zone==='A'?0:1; // A=Sunday(0), B=Monday(1)
-    if(calendar)calendar.setOption('firstDay',firstDay);
-    // Calendar background
+    var zone=r.zone||'B';if(calendar)calendar.setOption('firstDay',zone==='A'?0:1);
     var calBg=r.calendar_bg||'default';
-    applyCalendarBg(calBg);
+    if(calBg==='green')document.body.style.setProperty('--bg','#ECFDF5');
+    else if(calBg==='blue')document.body.style.setProperty('--bg','#EFF6FF');
+    else if(calBg==='sunset')document.body.style.setProperty('--bg','#FFF7ED');
   }catch(e){}
-}
-
-function applyCalendarBg(bg){
-  var root=document.documentElement.style;
-  if(bg==='green'){root.setProperty('--bg','#ECFDF5')}
-  else if(bg==='blue'){root.setProperty('--bg','#EFF6FF')}
-  else if(bg==='sunset'){root.setProperty('--bg','#FFF7ED')}
-  else{root.setProperty('--bg','#F8FAFC')}
 }
 
 function fetchEvents(info,success,fail){
   api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){if(r.ok)success(r.data);else fail()}).catch(fail);
 }
-
 function updateFromDrop(event){
   api('/api/events/'+event.id,{method:'PUT',body:{start:event.start.toISOString(),end:event.end?event.end.toISOString():event.start.toISOString()}})
     .then(function(r){if(!r.ok){calendar.refetchEvents();toast('❌ Gagal','error')}});
 }
-
-// ===== EVENT MODAL =====
 function openEventModal(event,startStr,endStr){
-  document.getElementById('eventId').value=event?event.id:'';
-  document.getElementById('modalTitle').textContent=event?'✏️ Edit Acara':'📝 Acara Baru';
-  document.getElementById('evTitle').value=event?event.title:'';
-  document.getElementById('evDesc').value=event?(event.extendedProps.description||''):'';
+  document.getElementById('eventId').value=event?event.id:'';document.getElementById('modalTitle').textContent=event?'✏️ Edit Acara':'📝 Acara Baru';
+  document.getElementById('evTitle').value=event?event.title:'';document.getElementById('evDesc').value=event?(event.extendedProps.description||''):'';
   document.getElementById('evStart').value=event?event.startStr.slice(0,16):(startStr||'').slice(0,16);
   document.getElementById('evEnd').value=event?(event.endStr?event.endStr.slice(0,16):''):(endStr||'').slice(0,16);
   document.getElementById('btnDelete').style.display=event?'inline-flex':'none';
-  selectedCat=event?(event.extendedProps.category||'hijau'):'hijau';
-  renderCatGrid(selectedCat);
+  selectedCat=event?(event.extendedProps.category||'hijau'):'hijau';renderCatGrid(selectedCat);
   document.getElementById('eventModal').classList.add('show');
 }
-
 function closeModal(){document.getElementById('eventModal').classList.remove('show')}
-
 async function saveEvent(e){
-  e.preventDefault();
-  var id=document.getElementById('eventId').value;
+  e.preventDefault();var id=document.getElementById('eventId').value;
   var data={title:document.getElementById('evTitle').value,description:document.getElementById('evDesc').value,
     start:document.getElementById('evStart').value,end:document.getElementById('evEnd').value||document.getElementById('evStart').value,
     category:selectedCat,color:CATS[selectedCat].color};
   var r=id?await api('/api/events/'+id,{method:'PUT',body:data}):await api('/api/events',{method:'POST',body:data});
   if(r.ok){calendar.refetchEvents();closeModal();loadAll();toast('✅ Disimpan!')}else toast('❌ '+r.data.error,'error')
 }
-
 async function deleteEvent(){
   if(!confirm('Padam acara ini?'))return;
-  var id=document.getElementById('eventId').value;
-  var r=await api('/api/events/'+id,{method:'DELETE'});
+  var r=await api('/api/events/'+document.getElementById('eventId').value,{method:'DELETE'});
   if(r.ok){calendar.refetchEvents();closeModal();loadAll();toast('🗑️ Dipadam')}else toast('❌ '+r.data.error,'error')
 }
 
-// ===== BIRTHDAYS =====
+// Birthdays
 async function loadBirthdays(){
-  var r=await api('/api/birthdays');
-  var list=document.getElementById('bdayList');
-  if(!r.ok){list.innerHTML='<span style="font-size:.72rem">Ralat</span>';return}
+  var r=await api('/api/birthdays'),list=document.getElementById('bdayList');
+  if(!r.ok){list.innerHTML='<span style="font-size:.7rem">Ralat</span>';return}
   var colors=['#EF4444','#F97316','#EAB308','#22C55E','#3B82F6','#8B5CF6','#EC4899'];
   list.innerHTML=r.data.slice(0,5).map(function(b,i){
-    var cls=b.daysLeft===0?' bday-today':'';
-    return '<div class="bday-item"><div class="bday-avatar" style="background:'+colors[i%colors.length]+'">'+b.name[0]+'</div>'+
-      '<div class="bday-info"><strong>'+b.name+'</strong><span>'+b.date+' • Umur '+b.age+'</span></div>'+
-      '<span class="bday-countdown'+cls+'">'+ (b.daysLeft===0?'🎉 HARI INI!':b.daysLeft+' hari')+'</span></div>';
-  }).join('')||'<span style="font-size:.72rem;color:var(--muted)">Tiada hari lahir</span>';
+    return '<div class="bday-item"><div class="bday-avatar" style="background:'+colors[i%colors.length]+'">'+b.name[0]+'</div><div class="bday-info"><strong>'+b.name+'</strong><span>'+b.date+' • '+b.age+' thn</span></div><span class="bday-countdown'+(b.daysLeft===0?' bday-today':'')+'">'+(b.daysLeft===0?'🎉 HARI INI!':b.daysLeft+' hari')+'</span></div>';
+  }).join('')||'<span style="font-size:.7rem;color:var(--text3)">Tiada</span>';
 }
-
-async function addBirthday(e){
-  e.preventDefault();
+async function addBirthday(e){e.preventDefault();
   var r=await api('/api/birthdays',{method:'POST',body:{name:document.getElementById('bdName').value,date:document.getElementById('bdDate').value,note:document.getElementById('bdNote').value}});
   if(r.ok){document.getElementById('bdayModal').classList.remove('show');loadBirthdays();toast('✅ Disimpan')}else toast('❌ Gagal','error')
 }
 
-// ===== CHORES =====
+// Chores
 async function loadChores(){
-  var r=await api('/api/chores');
-  var list=document.getElementById('choreList');
+  var r=await api('/api/chores'),list=document.getElementById('choreList');
   if(!r.ok){list.innerHTML='Ralat';return}
   list.innerHTML=r.data.map(function(c){
-    return '<div class="chore-item"><div class="chore-check'+(c.done?' done':'')+'" onclick="toggleChore('+c.id+','+c.done+')">✓</div>'+
-      '<span class="chore-name'+(c.done?' done':'')+'">'+c.title+'</span>'+
-      '<span class="chore-assigned" style="color:'+c.assignedColor+'">'+c.assignedName+'</span>'+
-      (c.editable?'<button class="chore-del" onclick="delChore('+c.id+')">✕</button>':'')+'</div>';
-  }).join('')||'<span style="font-size:.72rem;color:var(--muted)">Tiada tugasan</span>';
+    return '<div class="chore-item"><div class="chore-check'+(c.done?' done':'')+'" onclick="toggleChore('+c.id+','+c.done+')">✓</div><span class="chore-name'+(c.done?' done':'')+'">'+c.title+'</span><span class="chore-assigned" style="color:'+c.assignedColor+'">'+c.assignedName+'</span>'+(c.editable?'<button class="chore-del" onclick="delChore('+c.id+')">✕</button>':'')+'</div>';
+  }).join('')||'<span style="font-size:.7rem;color:var(--text3)">Tiada</span>';
 }
-
-async function toggleChore(id,currentDone){
-  await api('/api/chores/'+id,{method:'PUT',body:{done:currentDone?0:1}});
-  loadChores();
-}
-
-async function addChore(e){
-  e.preventDefault();
-  var inp=document.getElementById('choreNew');if(!inp.value.trim())return;
+async function toggleChore(id,done){await api('/api/chores/'+id,{method:'PUT',body:{done:done?0:1}});loadChores()}
+async function addChore(e){e.preventDefault();var inp=document.getElementById('choreNew');if(!inp.value.trim())return;
   var r=await api('/api/chores',{method:'POST',body:{title:inp.value.trim(),assigned_to:user.id}});
   if(r.ok){inp.value='';loadChores();toast('✅ Ditambah')}else toast('❌ Gagal','error')
 }
+async function delChore(id){await api('/api/chores/'+id,{method:'DELETE'});loadChores()}
 
-async function delChore(id){
-  var r=await api('/api/chores/'+id,{method:'DELETE'});
-  if(r.ok)loadChores();
-}
-
-// ===== LOAD ALL SIDE DATA =====
 function loadAll(){
-  // Load legend
   api('/api/users').then(function(r){
-    if(r.ok){
-      var h='';r.data.forEach(function(u){h+='<span class="legend-tag"><span class="user-dot" style="background:'+u.color+'"></span>'+u.full_name+'</span>'});
-      // Add holiday legend
-      h+='<span class="legend-tag" style="color:#6B7280">🇲🇾 Cuti Umum & Sekolah</span>';
-      document.getElementById('legend').innerHTML=h;
-    }
-  });
-  loadBirthdays();
-  loadChores();
+    if(r.ok){var h='';r.data.forEach(function(u){h+='<span class="legend-tag"><span class="user-dot" style="background:'+u.color+'"></span>'+u.full_name+'</span>'});
+    h+='<span class="legend-tag" style="color:var(--text3)">🇲🇾 Cuti</span>';document.getElementById('legend').innerHTML=h}
+  });loadBirthdays();loadChores();
 }
 
-// ===== TOAST =====
 function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}
-
-// Keyboard + outside click close
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();document.getElementById('bdayModal').classList.remove('show')}});
 document.getElementById('eventModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
 document.getElementById('bdayModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')});

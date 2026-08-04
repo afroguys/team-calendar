@@ -1,76 +1,119 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="ms" data-theme="system">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Log Masuk — Family Calendar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{--green:#22C55E;--green-dark:#16A34A;--purple:#8B5CF6;--pink:#EC4899;--blue:#3B82F6;--gold:#EAB308;--white:#fff;--radius:14px}
+    /* ===== THEME SYSTEM ===== */
+    :root,[data-theme="light"]{
+      --c-bg:#F8FAFC;--c-surface:#FFFFFF;--c-surface-glass:rgba(255,255,255,.72);--c-text:#1E293B;--c-text2:#64748B;--c-text3:#94A3B8;
+      --c-border:rgba(226,232,240,.6);--c-border-solid:#E2E8F0;--c-shadow:rgba(0,0,0,.06);--c-shadow-lg:rgba(0,0,0,.1);
+      --c-glass-bg:rgba(255,255,255,.65);--c-glass-border:rgba(255,255,255,.4);--c-glass-blur:20px;
+      --c-glow:rgba(139,92,246,.12);--c-glow2:rgba(236,72,153,.08);--c-glow3:rgba(59,130,246,.08);
+      --c-input-bg:rgba(255,255,255,.08);--c-input-border:rgba(255,255,255,.15);--c-input-text:#fff;--c-input-placeholder:rgba(255,255,255,.3);
+      --c-btn-bg:#22C55E;--c-btn-text:#fff;--c-hint:rgba(255,255,255,.22);
+      --gradient-dark:linear-gradient(135deg,#1A1423,#2D1B3E,#1E3A5F,#0F172A);
+      --gradient-green:linear-gradient(135deg,#064E3B,#065F46,#047857,#064E3B);
+      --gradient-blue:linear-gradient(135deg,#1E3A5F,#1E40AF,#1D4ED8,#0F172A);
+      --gradient-sunset:linear-gradient(135deg,#7C2D12,#9A3412,#C2410C,#431407);
+      --noise-opacity:0.015;
+    }
+    [data-theme="dark"]{
+      --c-bg:#0F172A;--c-surface:#1E293B;--c-surface-glass:rgba(30,41,59,.75);--c-text:#E2E8F0;--c-text2:#94A3B8;--c-text3:#64748B;
+      --c-border:rgba(51,65,85,.6);--c-border-solid:#334155;--c-shadow:rgba(0,0,0,.3);--c-shadow-lg:rgba(0,0,0,.5);
+      --c-glass-bg:rgba(30,41,59,.7);--c-glass-border:rgba(51,65,85,.5);--c-glass-blur:24px;
+      --c-glow:rgba(139,92,246,.18);--c-glow2:rgba(236,72,153,.12);--c-glow3:rgba(59,130,246,.12);
+      --c-input-bg:rgba(255,255,255,.06);--c-input-border:rgba(255,255,255,.12);--c-input-text:#E2E8F0;--c-input-placeholder:rgba(255,255,255,.2);
+      --c-btn-bg:#22C55E;--c-btn-text:#fff;--c-hint:rgba(255,255,255,.15);
+      --gradient-dark:linear-gradient(135deg,#0B0F19,#111827,#0B1120,#0B0F19);
+      --noise-opacity:0.03;
+    }
+    @media(prefers-color-scheme:dark){[data-theme="system"]{
+      --c-bg:#0F172A;--c-surface:#1E293B;--c-surface-glass:rgba(30,41,59,.75);--c-text:#E2E8F0;--c-text2:#94A3B8;--c-text3:#64748B;
+      --c-border:rgba(51,65,85,.6);--c-border-solid:#334155;--c-shadow:rgba(0,0,0,.3);--c-shadow-lg:rgba(0,0,0,.5);
+      --c-glass-bg:rgba(30,41,59,.7);--c-glass-border:rgba(51,65,85,.5);--c-glass-blur:24px;
+      --c-glow:rgba(139,92,246,.18);--c-glow2:rgba(236,72,153,.12);--c-glow3:rgba(59,130,246,.12);
+      --c-input-bg:rgba(255,255,255,.06);--c-input-border:rgba(255,255,255,.12);--c-input-text:#E2E8F0;--c-input-placeholder:rgba(255,255,255,.2);
+      --c-btn-bg:#22C55E;--c-btn-text:#fff;--c-hint:rgba(255,255,255,.15);
+      --gradient-dark:linear-gradient(135deg,#0B0F19,#111827,#0B1120,#0B0F19);
+      --noise-opacity:0.03;
+    }}
+
+    /* Noise texture overlay (futuristic-bento-dashboard pattern) */
+    .noise-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--noise-opacity);
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:256px 256px}
+
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
-    
-    /* Animated background — dynamic via settings */
-    .bg-animated{
-      position:fixed;inset:0;z-index:0;
-    }
-    .bg-animated.default{background:linear-gradient(135deg,#1A1423 0%,#2D1B3E 30%,#1E3A5F 60%,#0F172A 100%)}
-    .bg-animated.default::before{background:radial-gradient(ellipse at 20% 50%,rgba(139,92,246,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(236,72,153,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(59,130,246,.1),transparent 50%)}
-    .bg-animated.green{background:linear-gradient(135deg,#064E3B 0%,#065F46 30%,#047857 60%,#064E3B 100%)}
-    .bg-animated.green::before{background:radial-gradient(ellipse at 20% 50%,rgba(34,197,94,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(16,185,129,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(5,150,105,.1),transparent 50%)}
-    .bg-animated.blue{background:linear-gradient(135deg,#1E3A5F 0%,#1E40AF 30%,#1D4ED8 60%,#0F172A 100%)}
-    .bg-animated.blue::before{background:radial-gradient(ellipse at 20% 50%,rgba(59,130,246,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(37,99,235,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(29,78,216,.1),transparent 50%)}
-    .bg-animated.sunset{background:linear-gradient(135deg,#7C2D12 0%,#9A3412 30%,#C2410C 60%,#431407 100%)}
-    .bg-animated.sunset::before{background:radial-gradient(ellipse at 20% 50%,rgba(249,115,22,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(234,88,12,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(194,65,12,.1),transparent 50%)}
-    .bg-animated::before{content:'';position:absolute;inset:0}
-    
+    body{font-family:'Inter',sans-serif;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;background:var(--c-bg)}
+
+    /* Animated background */
+    .bg-layer{position:fixed;inset:0;z-index:0}
+    .bg-layer.default{background:var(--gradient-dark)}
+    .bg-layer.default::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,var(--c-glow),transparent 50%),radial-gradient(ellipse at 80% 20%,var(--c-glow2),transparent 50%),radial-gradient(ellipse at 50% 80%,var(--c-glow3),transparent 50%)}
+    .bg-layer.green{background:var(--gradient-green)}.bg-layer.blue{background:var(--gradient-blue)}.bg-layer.sunset{background:var(--gradient-sunset)}
+    .bg-layer.green::before,.bg-layer.blue::before,.bg-layer.sunset::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%,rgba(255,255,255,.06),transparent 60%)}
+
     /* Floating orbs */
-    .orb{position:absolute;border-radius:50%;filter:blur(60px);animation:float var(--dur) ease-in-out infinite;opacity:0.6;pointer-events:none}
-    .orb-1{width:300px;height:300px;background:var(--purple);top:10%;left:5%;--dur:8s}
-    .orb-2{width:250px;height:250px;background:var(--pink);top:60%;right:5%;--dur:10s;animation-delay:-3s}
-    .orb-3{width:200px;height:200px;background:var(--blue);bottom:10%;left:30%;--dur:12s;animation-delay:-6s}
-    .orb-4{width:180px;height:180px;background:var(--green);top:30%;right:20%;--dur:9s;animation-delay:-1s}
-    .orb-5{width:150px;height:150px;background:var(--gold);top:50%;left:50%;--dur:7s;animation-delay:-4s}
-    @keyframes float{
-      0%,100%{transform:translate(0,0) scale(1)}
-      25%{transform:translate(30px,-20px) scale(1.08)}
-      50%{transform:translate(-15px,15px) scale(0.95)}
-      75%{transform:translate(-25px,-10px) scale(1.05)}
-    }
-    
-    /* Particle dots */
-    .particles{position:absolute;inset:0;pointer-events:none}
-    .particle{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.4);animation:drift var(--d) linear infinite;animation-delay:var(--delay)}
-    @keyframes drift{
-      0%{transform:translateY(100vh) translateX(0);opacity:0}
-      10%{opacity:1}
-      90%{opacity:1}
-      100%{transform:translateY(-10vh) translateX(var(--dx));opacity:0}
-    }
-    
-    /* Login box */
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);animation:float var(--dur) ease-in-out infinite;opacity:.5;pointer-events:none}
+    .orb-1{width:320px;height:320px;background:var(--c-glow);top:10%;left:5%;--dur:8s}
+    .orb-2{width:260px;height:260px;background:var(--c-glow2);top:60%;right:5%;--dur:10s;animation-delay:-3s}
+    .orb-3{width:220px;height:220px;background:var(--c-glow3);bottom:10%;left:30%;--dur:12s;animation-delay:-6s}
+    .orb-4{width:180px;height:180px;background:var(--c-glow);top:30%;right:20%;--dur:9s;animation-delay:-2s}
+    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(35px,-25px) scale(1.06)}50%{transform:translate(-20px,18px) scale(.94)}75%{transform:translate(-30px,-12px) scale(1.04)}}
+
+    /* Glass card (novacraft-ui + bento pattern) */
     .login-wrapper{position:relative;z-index:1;width:100%;max-width:400px;padding:20px}
-    .login-card{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:36px 28px;box-shadow:0 24px 64px rgba(0,0,0,.3)}
-    .family-icon{text-align:center;font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
-    .family-name{text-align:center;font-size:1.5rem;font-weight:800;color:var(--white);margin-bottom:4px;letter-spacing:-0.3px}
-    .family-sub{text-align:center;color:rgba(255,255,255,.55);font-size:.82rem;margin-bottom:24px}
+    .login-card{
+      background:var(--c-glass-bg);backdrop-filter:blur(var(--c-glass-blur));-webkit-backdrop-filter:blur(var(--c-glass-blur));
+      border:1px solid var(--c-glass-border);border-radius:16px;padding:36px 28px;
+      box-shadow:0 8px 32px var(--c-shadow),inset 0 1px 0 rgba(255,255,255,.08);
+      transition:all .3s ease
+    }
+    .login-card:hover{box-shadow:0 12px 48px var(--c-shadow-lg),0 0 0 1px var(--c-glow),inset 0 1px 0 rgba(255,255,255,.1)}
+    .family-icon{text-align:center;font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 4px 12px var(--c-glow));transition:transform .3s}
+    .family-icon:hover{transform:scale(1.08)}
+    .family-icon img{width:80px;height:80px;border-radius:18px;object-fit:cover;border:2px solid var(--c-glass-border)}
+    .family-name{text-align:center;font-size:1.5rem;font-weight:800;color:var(--c-input-text);margin-bottom:4px;letter-spacing:-.3px}
+    .family-sub{text-align:center;color:var(--c-hint);font-size:.82rem;margin-bottom:24px}
+
+    /* Glow input (novacraft-ui pattern) */
     .form-group{margin-bottom:14px}
     .form-group label{display:block;font-size:.78rem;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:5px}
-    .form-group input{width:100%;padding:12px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:var(--white);font-size:.9rem;font-family:inherit;transition:all .15s}
-    .form-group input::placeholder{color:rgba(255,255,255,.3)}
-    .form-group input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.15);background:rgba(255,255,255,.12)}
-    .btn{width:100%;padding:13px;background:var(--green);color:var(--white);border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:.3px}
-    .btn:hover{background:var(--green-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(34,197,94,.3)}
-    .error{background:rgba(239,68,68,.15);color:#FCA5A5;padding:10px 14px;border-radius:8px;font-size:.82rem;margin-bottom:14px;display:none;text-align:center;border:1px solid rgba(239,68,68,.25)}
-    .credits{text-align:center;margin-top:16px;color:rgba(255,255,255,.25);font-size:.72rem}
-    .spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+    .form-group input{width:100%;padding:12px 16px;background:var(--c-input-bg);border:1px solid var(--c-input-border);border-radius:10px;color:var(--c-input-text);font-size:.9rem;font-family:inherit;transition:all .2s ease}
+    .form-group input::placeholder{color:var(--c-input-placeholder)}
+    .form-group input:focus{outline:none;border-color:var(--c-btn-bg);box-shadow:0 0 0 4px rgba(34,197,94,.2),0 0 20px rgba(34,197,94,.1);background:var(--c-input-bg)}
+
+    .btn{width:100%;padding:13px;background:var(--c-btn-bg);color:var(--c-btn-text);border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s ease;letter-spacing:.3px;position:relative;overflow:hidden}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(34,197,94,.4)}
+    .btn:active{transform:translateY(0)}
+    .error{background:rgba(239,68,68,.12);color:#FCA5A5;padding:10px 14px;border-radius:8px;font-size:.82rem;margin-bottom:14px;display:none;text-align:center;border:1px solid rgba(239,68,68,.2)}
+    .spinner{display:none;width:22px;height:22px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:12px auto 0}
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Theme toggle */
+    .theme-toggle{position:fixed;top:16px;right:16px;z-index:10;display:flex;gap:4px;background:var(--c-glass-bg);backdrop-filter:blur(12px);padding:4px;border-radius:10px;border:1px solid var(--c-glass-border)}
+    .theme-btn{width:34px;height:34px;border-radius:8px;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;background:transparent;transition:all .15s;color:var(--c-text3)}
+    .theme-btn:hover{background:var(--c-surface)}
+    .theme-btn.active{background:var(--c-surface);color:var(--c-text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+    .credits{text-align:center;margin-top:16px;color:var(--c-hint);font-size:.72rem}
+    @media(max-width:480px){.login-card{padding:24px 18px}}
   </style>
 </head>
 <body>
-<div class="bg-animated" id="bgLayer">
-  <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
-  <div class="orb orb-4"></div><div class="orb orb-5"></div>
-  <div class="particles" id="particles"></div>
+
+<div class="noise-overlay"></div>
+
+<div class="bg-layer default" id="bgLayer">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div><div class="orb orb-4"></div>
+</div>
+
+<div class="theme-toggle" id="themeToggle">
+  <button class="theme-btn" title="Sistem" onclick="setTheme('system')">💻</button>
+  <button class="theme-btn" title="Terang" onclick="setTheme('light')">☀️</button>
+  <button class="theme-btn" title="Gelap" onclick="setTheme('dark')">🌙</button>
 </div>
 
 <div class="login-wrapper">
@@ -86,67 +129,51 @@
       <div class="spinner" id="spinner"></div>
     </form>
   </div>
-  <div class="credits">Powered by Family Calendar • Kawalan Admin Sahaja</div>
+  <div class="credits">Powered by Family Calendar</div>
 </div>
 
 <script>
-// Generate particles
-(function(){
-  var container = document.getElementById('particles');
-  for(var i=0;i<30;i++){
-    var p=document.createElement('div');
-    p.className='particle';
-    p.style.left=Math.random()*100+'%';
-    p.style.setProperty('--d',(8+Math.random()*12)+'s');
-    p.style.setProperty('--delay',Math.random()*8+'s');
-    p.style.setProperty('--dx',(Math.random()*60-30)+'px');
-    container.appendChild(p);
-  }
-})();
+// ===== THEME =====
+var savedTheme=localStorage.getItem('fc_theme')||'system';
+function setTheme(t){
+  savedTheme=t;localStorage.setItem('fc_theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+  document.querySelectorAll('.theme-btn').forEach(function(b,i){
+    b.classList.toggle('active',(i===0&&t==='system')||(i===1&&t==='light')||(i===2&&t==='dark'));
+  });
+}
+setTheme(savedTheme);
 
-// Load family name, icon, background from settings
+// Apply theme function for cross-window sync
+function applyTheme(t){setTheme(t)}
+
+// ===== LOAD SETTINGS =====
 fetch('/api/settings').then(r=>r.json()).then(function(d){
   document.getElementById('familyName').textContent=d.family_name||'Keluarga Saya';
   document.title=(d.family_name||'Keluarga Saya')+' — Log Masuk';
-  // Apply login icon (custom image or emoji)
   var iconEl=document.getElementById('familyIcon');
   if(d.custom_icon){
-    iconEl.innerHTML='<img src="/uploads/'+d.custom_icon+'" alt="icon" style="width:80px;height:80px;border-radius:20px;object-fit:cover">';
-  } else {
-    iconEl.textContent=d.login_icon||'👨‍👩‍👧‍👦';
-  }
-  // Apply background (custom image or theme)
+    iconEl.innerHTML='<img src="/uploads/'+d.custom_icon+'" alt="icon">';
+  }else{iconEl.textContent=d.login_icon||'👨‍👩‍👧‍👦'}
   var bgLayer=document.getElementById('bgLayer');
   if(d.custom_bg){
-    bgLayer.className='bg-animated';
-    bgLayer.style.backgroundImage='url(/uploads/'+d.custom_bg+')';
-    bgLayer.style.backgroundSize='cover';
-    bgLayer.style.backgroundPosition='center';
-  } else {
-    var bg=d.login_bg||'default';
-    bgLayer.className='bg-animated '+bg;
-    bgLayer.style.backgroundImage='';
-    bgLayer.style.backgroundSize='';
-    bgLayer.style.backgroundPosition='';
-  }
+    bgLayer.className='bg-layer';bgLayer.style.backgroundImage='url(/uploads/'+d.custom_bg+')';bgLayer.style.backgroundSize='cover';bgLayer.style.backgroundPosition='center'
+  }else{var bg=d.login_bg||'default';bgLayer.className='bg-layer '+bg;bgLayer.style.backgroundImage='';bgLayer.style.backgroundSize='';bgLayer.style.backgroundPosition=''}
 }).catch(function(){});
 
+// ===== LOGIN =====
 async function login(e){
   e.preventDefault();
   document.getElementById('error').style.display='none';
   document.getElementById('loginBtn').style.display='none';
   document.getElementById('spinner').style.display='block';
   try{
-    var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
+    var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
     var d=await r.json();
     if(!r.ok){document.getElementById('error').textContent=d.error;document.getElementById('error').style.display='block';document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none';return}
     localStorage.setItem('token',d.token);localStorage.setItem('user',JSON.stringify(d.user));
     window.location.href='/';
-  }catch(err){
-    document.getElementById('error').textContent='Ralat rangkaian — cuba lagi';document.getElementById('error').style.display='block';
-    document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none';
-  }
+  }catch(err){document.getElementById('error').textContent='Ralat rangkaian';document.getElementById('error').style.display='block';document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none'}
 }
 </script>
 </body>

@@ -71,6 +71,7 @@ def init_db():
             db.execute("INSERT OR IGNORE INTO settings VALUES ('zone','B')")
             db.execute("INSERT OR IGNORE INTO settings VALUES ('login_bg','default')")
             db.execute("INSERT OR IGNORE INTO settings VALUES ('login_icon','👨‍👩‍👧‍👦')")
+            db.execute("INSERT OR IGNORE INTO settings VALUES ('theme','system')")
             db.execute("INSERT OR IGNORE INTO settings VALUES ('calendar_bg','default')")
         # Default admin
         if not db.execute("SELECT id FROM users WHERE username='admin'").fetchone():
