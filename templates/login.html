@@ -1,71 +1,86 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="ms" data-theme="cyber">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Log Masuk — Family Calendar</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --cyber-bg:#0b0f19;--cyber-neon:#00f3ff;--cyber-pink:#ff0080;--cyber-purple:#7928ca;--cyber-gold:#ffb300;
-      --cyber-border:rgba(0,243,255,.2);--cyber-border2:rgba(0,243,255,.3);
-      --cyber-glass:rgba(255,255,255,.03);--cyber-glass-hover:rgba(0,243,255,.08);
-      --glow:0 0 15px rgba(0,243,255,.15);--glow2:0 0 25px rgba(255,0,128,.2);--glow3:0 0 10px rgba(0,243,255,.3);
+    /* ===== CYBER (DEFAULT) ===== */
+    :root,[data-theme="cyber"]{
+      --bg:#0b0f19;--fg:#e0f7fa;--fg2:#80deea;--fg3:#4dd0e1;--accent:#00f3ff;--accent2:#ff0080;--accent3:#7928ca;
+      --border:rgba(0,243,255,.2);--border2:rgba(0,243,255,.3);--glass:rgba(255,255,255,.03);--glass-hover:rgba(0,243,255,.08);
+      --input-bg:rgba(255,255,255,.04);--input-border:rgba(0,243,255,.2);--input-focus:rgba(0,243,255,.2);
+      --btn-bg:rgba(0,243,255,.08);--btn-color:#00f3ff;--btn-border:rgba(0,243,255,.3);--btn-hover:rgba(0,243,255,.15);
+      --error-bg:rgba(255,0,128,.08);--error-color:#ff0080;--error-border:rgba(255,0,128,.2);
+      --orb1:#7928ca;--orb2:#ff0080;--orb3:#00f3ff;--grid-color:rgba(0,243,255,.3);
+      --card-glow:0 0 30px rgba(0,243,255,.1);--card-glow-hover:0 0 40px rgba(0,243,255,.2);
+      --heading-font:'Orbitron',sans-serif;--body-font:'Inter',sans-serif;
+      --btn-radius:10px;--card-radius:16px;
+      --grid-show:1;--scan-show:1;--noise-opacity:.015;
+    }
+    /* ===== VIOLET PULSE ===== */
+    [data-theme="violet"]{
+      --bg:#F9FBFF;--fg:#1E293B;--fg2:#475569;--fg3:#64748B;--accent:#432DD7;--accent2:#0092B8;--accent3:#C6D1FF;
+      --border:rgba(67,45,215,.15);--border2:rgba(67,45,215,.25);--glass:rgba(255,255,255,.72);--glass-hover:rgba(67,45,215,.06);
+      --input-bg:rgba(255,255,255,.08);--input-border:rgba(67,45,215,.15);--input-focus:rgba(67,45,215,.15);
+      --btn-bg:#432DD7;--btn-color:#fff;--btn-border:rgba(67,45,215,.3);--btn-hover:#3B22C0;
+      --error-bg:rgba(239,68,68,.08);--error-color:#EF4444;--error-border:rgba(239,68,68,.2);
+      --orb1:#C6D1FF;--orb2:#432DD7;--orb3:#0092B8;--grid-color:rgba(67,45,215,.08);
+      --card-glow:0 4px 24px rgba(67,45,215,.08);--card-glow-hover:0 8px 32px rgba(67,45,215,.15);
+      --heading-font:'Inter',sans-serif;--body-font:'Inter',sans-serif;
+      --btn-radius:12px;--card-radius:20px;
+      --grid-show:0;--scan-show:0;--noise-opacity:0;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;background:var(--cyber-bg)}
+    body{font-family:var(--body-font);overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg);color:var(--fg);transition:background .5s}
 
-    /* Grid overlay */
-    .grid-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04;
-      background-image:linear-gradient(rgba(0,243,255,.3) 1px,transparent 1px),linear-gradient(90deg,rgba(0,243,255,.3) 1px,transparent 1px);background-size:40px 40px;animation:gridScroll 20s linear infinite}
+    .grid-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--grid-show);background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);background-size:40px 40px;animation:gridScroll 20s linear infinite}
     @keyframes gridScroll{0%{background-position:0 0}100%{background-position:0 40px}}
-
-    /* Scanning line */
-    .scanline{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:.04}
-    .scanline::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:8px;background:linear-gradient(transparent,var(--cyber-neon),transparent);animation:scan 6s linear infinite}
+    .scanline{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:var(--scan-show)}
+    .scanline::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:8px;background:linear-gradient(transparent,var(--accent),transparent);animation:scan 6s linear infinite}
     @keyframes scan{0%{top:-10%}100%{top:110%}}
 
-    /* Floating orbs */
-    .orb{position:absolute;border-radius:50%;filter:blur(80px);animation:float var(--dur) ease-in-out infinite;opacity:.4;pointer-events:none}
-    .orb-1{width:300px;height:300px;background:var(--cyber-purple);top:10%;left:5%;--dur:8s}
-    .orb-2{width:250px;height:250px;background:var(--cyber-pink);top:60%;right:5%;--dur:10s;animation-delay:-3s}
-    .orb-3{width:200px;height:200px;background:var(--cyber-neon);bottom:10%;left:30%;--dur:12s;animation-delay:-6s}
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);animation:float var(--dur) ease-in-out infinite;pointer-events:none;transition:background .5s}
+    .orb-1{width:300px;height:300px;background:var(--orb1);top:10%;left:5%;--dur:8s;opacity:.4}
+    .orb-2{width:250px;height:250px;background:var(--orb2);top:60%;right:5%;--dur:10s;animation-delay:-3s;opacity:.4}
+    .orb-3{width:200px;height:200px;background:var(--orb3);bottom:10%;left:30%;--dur:12s;animation-delay:-6s;opacity:.4}
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(35px,-25px) scale(1.06)}50%{transform:translate(-20px,18px) scale(.94)}75%{transform:translate(-30px,-12px) scale(1.04)}}
+    [data-theme="violet"] .orb-1,[data-theme="violet"] .orb-2,[data-theme="violet"] .orb-3{opacity:.5;filter:blur(100px)}
 
-    /* Noise */
-    .noise-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.015;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size:256px 256px}
+    .noise-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--noise-opacity);background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px 256px}
 
     .login-wrapper{position:relative;z-index:1;width:100%;max-width:400px;padding:20px}
-    /* Neon glass card */
-    .login-card{background:rgba(255,255,255,.03);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--cyber-border);border-radius:16px;padding:36px 28px;box-shadow:0 0 30px rgba(0,243,255,.1),inset 0 1px 0 rgba(0,243,255,.05);transition:all .3s ease}
-    .login-card:hover{border-color:var(--cyber-border2);box-shadow:0 0 40px rgba(0,243,255,.2)}
-    .family-icon{text-align:center;font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 10px rgba(0,243,255,.4));transition:transform .3s}
-    .family-icon:hover{transform:scale(1.08)}
-    .family-icon img{width:80px;height:80px;border-radius:18px;object-fit:cover;border:1px solid var(--cyber-border2)}
-    .family-name{text-align:center;font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:800;color:var(--cyber-neon);margin-bottom:4px;letter-spacing:3px;text-transform:uppercase}
-    .family-sub{text-align:center;color:var(--cyber-text3, #4dd0e1);font-size:.78rem;margin-bottom:24px}
+    .login-card{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--card-radius);padding:36px 28px;box-shadow:var(--card-glow),inset 0 1px 0 rgba(255,255,255,.05);transition:all .4s ease}
+    .login-card:hover{border-color:var(--border2);box-shadow:var(--card-glow-hover)}
+    .family-icon{text-align:center;font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 10px var(--accent3));transition:transform .3s}
+    .family-icon:hover{transform:scale(1.08)}.family-icon img{width:80px;height:80px;border-radius:18px;object-fit:cover;border:2px solid var(--border2)}
+    .family-name{text-align:center;font-family:var(--heading-font);font-size:1.3rem;font-weight:800;margin-bottom:4px;transition:all .4s}
+    [data-theme="cyber"] .family-name{color:var(--accent);letter-spacing:3px;text-transform:uppercase}
+    [data-theme="violet"] .family-name{color:var(--accent);letter-spacing:0;text-transform:none;font-size:1.5rem}
+    .family-sub{text-align:center;color:var(--fg3);font-size:.78rem;margin-bottom:24px}
 
     .form-group{margin-bottom:14px}
-    .form-group label{display:block;font-size:.72rem;font-weight:600;color:var(--cyber-neon);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;font-family:'Orbitron',sans-serif}
-    .form-group input{width:100%;padding:12px 16px;background:rgba(255,255,255,.04);border:1px solid var(--cyber-border);border-radius:10px;color:#e0f7fa;font-size:.88rem;font-family:'Inter',sans-serif;transition:all .2s ease}
-    .form-group input::placeholder{color:rgba(0,243,255,.2)}
-    .form-group input:focus{outline:none;border-color:var(--cyber-neon);box-shadow:0 0 15px rgba(0,243,255,.2),0 0 30px rgba(0,243,255,.05);background:rgba(0,243,255,.05)}
+    .form-group label{display:block;font-size:.72rem;font-weight:600;color:var(--accent);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;font-family:var(--heading-font)}
+    [data-theme="violet"] .form-group label{text-transform:none;letter-spacing:0;font-weight:700}
+    .form-group input{width:100%;padding:12px 16px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;color:var(--fg);font-size:.88rem;font-family:'Inter',sans-serif;transition:all .2s ease}
+    .form-group input::placeholder{opacity:.3;color:var(--fg3)}
+    .form-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 15px var(--input-focus),0 0 30px rgba(0,0,0,.02);background:color-mix(in srgb,var(--accent) 5%,var(--input-bg))}
 
-    .btn{width:100%;padding:14px;background:rgba(0,243,255,.08);color:var(--cyber-neon);border:1px solid var(--cyber-border2);border-radius:10px;font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s ease;letter-spacing:3px;text-transform:uppercase}
-    .btn:hover{background:rgba(0,243,255,.15);box-shadow:0 0 25px rgba(0,243,255,.3);transform:translateY(-2px)}
+    .btn{width:100%;padding:14px;background:var(--btn-bg);color:var(--btn-color);border:1px solid var(--btn-border);border-radius:var(--btn-radius);font-family:var(--heading-font);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s ease;letter-spacing:3px;text-transform:uppercase}
+    .btn:hover{background:var(--btn-hover);box-shadow:0 0 25px var(--btn-bg);transform:translateY(-2px)}
     .btn:active{transform:translateY(0)}
-    .error{background:rgba(255,0,128,.08);color:var(--cyber-pink);padding:10px 14px;border-radius:8px;font-size:.8rem;margin-bottom:14px;display:none;text-align:center;border:1px solid rgba(255,0,128,.2)}
-    .spinner{display:none;width:22px;height:22px;border:2px solid rgba(0,243,255,.15);border-top-color:var(--cyber-neon);border-radius:50%;animation:spin .6s linear infinite;margin:12px auto 0}
+    [data-theme="violet"] .btn{letter-spacing:1px;text-transform:none;box-shadow:0 4px 14px rgba(67,45,215,.3)}
+    .error{background:var(--error-bg);color:var(--error-color);padding:10px 14px;border-radius:8px;font-size:.8rem;margin-bottom:14px;display:none;text-align:center;border:1px solid var(--error-border)}
+    .spinner{display:none;width:22px;height:22px;border:2px solid color-mix(in srgb,var(--btn-color) 15%,transparent);border-top-color:var(--btn-color);border-radius:50%;animation:spin .6s linear infinite;margin:12px auto 0}
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    .credits{text-align:center;margin-top:16px;color:rgba(0,243,255,.15);font-size:.68rem;font-family:'Orbitron',sans-serif;letter-spacing:1px}
+    .credits{text-align:center;margin-top:16px;font-size:.68rem;font-family:var(--heading-font);letter-spacing:1px}
+    [data-theme="cyber"] .credits{color:var(--fg3);opacity:.5}
+    [data-theme="violet"] .credits{color:var(--fg3)}
   </style>
 </head>
 <body>
-<div class="grid-overlay"></div>
-<div class="scanline"></div>
-<div class="noise-overlay"></div>
+<div class="grid-overlay"></div><div class="scanline"></div><div class="noise-overlay"></div>
 <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
 
 <div class="login-wrapper">
@@ -75,8 +90,8 @@
     <div class="family-sub">◆ SISTEM KALENDAR KELUARGA ◆</div>
     <div class="error" id="error"></div>
     <form id="loginForm" onsubmit="login(event)">
-      <div class="form-group"><label>ID</label><input type="text" id="username" required placeholder="MASUKKAN USERNAME" autocomplete="username"></div>
-      <div class="form-group"><label>KOD</label><input type="password" id="password" required placeholder="••••••" autocomplete="current-password"></div>
+      <div class="form-group"><label>ID</label><input type="text" id="username" required placeholder="MASUKKAN USERNAME"></div>
+      <div class="form-group"><label>KOD</label><input type="password" id="password" required placeholder="••••••"></div>
       <button type="submit" class="btn" id="loginBtn">AKSES</button>
       <div class="spinner" id="spinner"></div>
     </form>
@@ -86,22 +101,16 @@
 
 <script>
 fetch('/api/settings').then(r=>r.json()).then(function(d){
-  document.getElementById('familyName').textContent=(d.family_name||'KELUARGA').toUpperCase();
+  var theme=d.theme||'cyber';document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('familyName').textContent=theme==='violet'?(d.family_name||'Keluarga Saya'):(d.family_name||'KELUARGA').toUpperCase();
   document.title=(d.family_name||'Keluarga')+' — Log Masuk';
-  var iconEl=document.getElementById('familyIcon');
-  if(d.custom_icon)iconEl.innerHTML='<img src="/uploads/'+d.custom_icon+'" alt="icon">';
-  else iconEl.textContent=d.login_icon||'👨‍👩‍👧‍👦'
+  if(d.custom_icon)document.getElementById('familyIcon').innerHTML='<img src="/uploads/'+d.custom_icon+'" alt="icon">';
+  else document.getElementById('familyIcon').textContent=d.login_icon||'👨‍👩‍👧‍👦';
 }).catch(function(){});
 
 async function login(e){
   e.preventDefault();document.getElementById('error').style.display='none';document.getElementById('loginBtn').style.display='none';document.getElementById('spinner').style.display='block';
-  try{
-    var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
-    var d=await r.json();
-    if(!r.ok){document.getElementById('error').textContent=d.error;document.getElementById('error').style.display='block';document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none';return}
-    localStorage.setItem('token',d.token);localStorage.setItem('user',JSON.stringify(d.user));
-    window.location.href='/';
-  }catch(err){document.getElementById('error').textContent='RALAT RANGKAIAN';document.getElementById('error').style.display='block';document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none'}
+  try{var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});var d=await r.json();if(!r.ok){document.getElementById('error').textContent=d.error;document.getElementById('error').style.display='block';document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none';return}localStorage.setItem('token',d.token);localStorage.setItem('user',JSON.stringify(d.user));window.location.href='/'}catch(err){document.getElementById('error').textContent='RALAT RANGKAIAN';document.getElementById('error').style.display='block';document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none'}
 }
 </script>
 </body>

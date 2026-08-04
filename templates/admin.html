@@ -92,6 +92,14 @@
     </div>
   </div>
 
+  <div class="card"><h3>◆ TEMA</h3>
+    <p style="font-size:.72rem;color:var(--cyber-text3);margin-bottom:12px">Pilih tema untuk login & calendar.</p>
+    <div class="zone-grid">
+      <div class="zone-option" id="theme-cyber" onclick="selectTheme('cyber')"><div class="zone-label">💻 CYBER</div><div class="zone-desc">Gelap Sci-Fi — cyan + pink neon</div></div>
+      <div class="zone-option" id="theme-violet" onclick="selectTheme('violet')"><div class="zone-label">💜 VIOLET PULSE</div><div class="zone-desc">Terang — ungu + teal, dari 21st.dev</div></div>
+    </div>
+  </div>
+
   <div class="card"><h3>◆ WHATSAPP BOT</h3>
     <p style="font-size:.72rem;color:var(--cyber-text3);margin-bottom:12px">Hantar satu mesej ke <strong style="color:var(--cyber-neon)">Group WhatsApp</strong> setiap pagi. Setup di <a href="https://developers.facebook.com" target="_blank" style="color:var(--cyber-neon)">Meta Developer</a>.</p>
     <div class="form-grid">
@@ -166,29 +174,30 @@
 <script>
 var token=localStorage.getItem('token'),user=JSON.parse(localStorage.getItem('user')||'{}');
 if(!token||!user.is_admin)window.location.href='/';
-var settings={allowRegister:false,zone:'B',loginBg:'default',loginIcon:'👨‍👩‍👧‍👦',waEnabled:false};
+var settings={allowRegister:false,zone:'B',loginBg:'default',loginIcon:'👨‍👩‍👧‍👦',waEnabled:false,theme:'cyber'};
 
 async function api(url,opts){if(!opts)opts={};if(!opts.headers)opts.headers={};opts.headers['Authorization']='Bearer '+token;if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})});}
 function logout(){localStorage.clear();window.location.href='/login'}
 
 fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
-  settings.allowRegister=d.allow_register==='1';settings.zone=d.zone||'B';settings.loginBg=d.login_bg||'default';settings.loginIcon=d.login_icon||'👨‍👩‍👧‍👦';settings.waEnabled=d.wa_enabled==='1';
+  settings.allowRegister=d.allow_register==='1';settings.zone=d.zone||'B';settings.loginBg=d.login_bg||'default';settings.loginIcon=d.login_icon||'👨‍👩‍👧‍👦';settings.waEnabled=d.wa_enabled==='1';settings.theme=d.theme||'cyber';
   document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
   document.getElementById('waApiToken').value=d.wa_api_token||'';document.getElementById('waGroupId').value=d.wa_group_id||'';document.getElementById('waPhone1').value=d.wa_phone_1||'';document.getElementById('waPhone2').value=d.wa_phone_2||'';document.getElementById('waPhone3').value=d.wa_phone_3||'';document.getElementById('waReminderHour').value=d.wa_reminder_hour||'7';
   document.getElementById('toggleRegister').classList.toggle('on',settings.allowRegister);document.getElementById('regLabel').textContent=settings.allowRegister?'BUKA':'TUTUP';
   document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF';document.getElementById('waLabel').style.color=settings.waEnabled?'var(--cyber-neon)':'var(--cyber-pink)';
-  selectZone(settings.zone);selectBg(settings.loginBg);selectIcon(settings.loginIcon);checkCustomUploads(d);
+  selectZone(settings.zone);selectTheme(settings.theme);selectBg(settings.loginBg);selectIcon(settings.loginIcon);checkCustomUploads(d);
 });
 
 function toggleReg(){settings.allowRegister=!settings.allowRegister;document.getElementById('toggleRegister').classList.toggle('on',settings.allowRegister);document.getElementById('regLabel').textContent=settings.allowRegister?'BUKA':'TUTUP'}
 function toggleWA(){settings.waEnabled=!settings.waEnabled;document.getElementById('toggleWA').classList.toggle('on',settings.waEnabled);document.getElementById('waLabel').textContent=settings.waEnabled?'ON':'OFF';document.getElementById('waLabel').style.color=settings.waEnabled?'var(--cyber-neon)':'var(--cyber-pink)'}
 
 function selectZone(z){settings.zone=z;document.getElementById('zoneA').classList.toggle('active',z==='A');document.getElementById('zoneB').classList.toggle('active',z==='B')}
+function selectTheme(t){settings.theme=t;document.getElementById('theme-cyber').classList.toggle('active',t==='cyber');document.getElementById('theme-violet').classList.toggle('active',t==='violet')}
 function selectBg(bg){settings.loginBg=bg;document.querySelectorAll('.bg-chip').forEach(function(c){c.classList.toggle('active',c.id==='bg-'+bg)})}
 function selectIcon(icon){settings.loginIcon=icon;document.querySelectorAll('.icon-chip').forEach(function(c){c.classList.toggle('active',c.textContent===icon)})}
 
 async function saveAllSettings(){
-  await api('/api/settings',{method:'PUT',body:{family_name:document.getElementById('sFamilyName').value,brand_title:document.getElementById('sBrandTitle').value,allow_register:settings.allowRegister?'1':'0',zone:settings.zone,login_bg:settings.loginBg,login_icon:settings.loginIcon,wa_enabled:settings.waEnabled?'1':'0',wa_api_token:document.getElementById('waApiToken').value,wa_group_id:document.getElementById('waGroupId').value,wa_phone_1:document.getElementById('waPhone1').value,wa_phone_2:document.getElementById('waPhone2').value,wa_phone_3:document.getElementById('waPhone3').value,wa_reminder_hour:document.getElementById('waReminderHour').value||'7'}});
+  await api('/api/settings',{method:'PUT',body:{family_name:document.getElementById('sFamilyName').value,brand_title:document.getElementById('sBrandTitle').value,allow_register:settings.allowRegister?'1':'0',zone:settings.zone,theme:settings.theme,login_bg:settings.loginBg,login_icon:settings.loginIcon,wa_enabled:settings.waEnabled?'1':'0',wa_api_token:document.getElementById('waApiToken').value,wa_group_id:document.getElementById('waGroupId').value,wa_phone_1:document.getElementById('waPhone1').value,wa_phone_2:document.getElementById('waPhone2').value,wa_phone_3:document.getElementById('waPhone3').value,wa_reminder_hour:document.getElementById('waReminderHour').value||'7'}});
   toast('TETAPAN DISIMPAN');
 }
 

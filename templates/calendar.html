@@ -109,6 +109,22 @@
       .side-panel{flex-direction:row;flex-wrap:wrap;gap:6px;padding:8px;max-height:35vh;overflow-y:auto;border-left:none;border-top:1px solid var(--cyber-border)}
       .side-section{flex:1;min-width:180px}.category-grid{grid-template-columns:repeat(2,1fr)}
     }
+    /* ===== VIOLET PULSE THEME ===== */
+    [data-theme="violet"]{
+      --cyber-bg:#F9FBFF;--cyber-surface:rgba(255,255,255,.72);--cyber-surface2:rgba(255,255,255,.85);--cyber-text:#1E293B;--cyber-text2:#475569;--cyber-text3:#64748B;
+      --cyber-neon:#432DD7;--cyber-pink:#0092B8;--cyber-purple:#7C3AED;--cyber-gold:#F59E0B;--cyber-green:#16A34A;--cyber-red:#DC2626;
+      --cyber-border:rgba(67,45,215,.1);--cyber-border2:rgba(67,45,215,.2);--cyber-glass:rgba(255,255,255,.7);--cyber-glass-hover:rgba(67,45,215,.06);
+      --cyber-glow:0 2px 12px rgba(67,45,215,.06);--cyber-glow2:0 4px 16px rgba(0,146,184,.08);--cyber-glow3:0 2px 8px rgba(67,45,215,.15);
+    }
+    [data-theme="violet"] body{background:#F1F5F9}
+    [data-theme="violet"] h1,[data-theme="violet"] h2,[data-theme="violet"] h3{font-family:'Inter',sans-serif!important;letter-spacing:0;text-transform:none}
+    [data-theme="violet"] .brand{font-family:'Inter',sans-serif;text-transform:none;letter-spacing:0;color:var(--cyber-neon)}
+    [data-theme="violet"] .btn{text-transform:none;letter-spacing:0;border-radius:10px}
+    [data-theme="violet"] .fc .fc-toolbar-title{font-family:'Inter',sans-serif!important;text-transform:none;letter-spacing:0}
+    [data-theme="violet"] .fc .fc-col-header-cell{font-family:'Inter',sans-serif!important;letter-spacing:0;text-transform:none}
+    [data-theme="violet"] .fc .fc-button{text-transform:none!important;letter-spacing:0!important;border-radius:10px!important}
+    [data-theme="violet"] .side-section h3{text-transform:none;letter-spacing:0}
+    [data-theme="violet"] .noise-overlay{opacity:0}
   </style>
 </head>
 <body>
@@ -178,7 +194,7 @@ document.addEventListener('DOMContentLoaded',function(){
   calendar.render();renderCatGrid('biru');
 });
 
-async function loadSettings(){try{var r=await fetch('/api/settings').then(function(r){return r.json()});document.getElementById('familyName').textContent=r.family_name||'FAMILY CALENDAR';document.title=r.family_name||'Family Calendar';var zone=r.zone||'B';if(calendar)calendar.setOption('firstDay',zone==='A'?0:1)}catch(e){}}
+async function loadSettings(){try{var r=await fetch('/api/settings').then(function(r){return r.json()});document.getElementById('familyName').textContent=r.family_name||'FAMILY CALENDAR';document.title=r.family_name||'Family Calendar';var theme=r.theme||'cyber';document.documentElement.setAttribute('data-theme',theme);var zone=r.zone||'B';if(calendar)calendar.setOption('firstDay',zone==='A'?0:1)}catch(e){}}
 function fetchEvents(info,success,fail){api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){if(r.ok)success(r.data);else fail()}).catch(fail)}
 function updateFromDrop(event){api('/api/events/'+event.id,{method:'PUT',body:{start:event.start.toISOString(),end:event.end?event.end.toISOString():event.start.toISOString()}}).then(function(r){if(!r.ok){calendar.refetchEvents();toast('GAGAL','error')}})}
 
