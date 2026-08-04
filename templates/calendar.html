@@ -107,6 +107,13 @@
     .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#000;font-weight:600;font-size:.78rem;transform:translateY(100px);opacity:0;transition:all .3s}
     .toast.show{transform:translateY(0);opacity:1}.toast-success{background:var(--cyber-neon)}.toast-error{background:var(--cyber-pink)}
 
+    /* Filter bar */
+    .filter-bar{grid-column:1/-1;display:flex;align-items:center;gap:4px;padding:5px 12px;border-bottom:1px solid var(--cyber-border);overflow-x:auto;background:var(--cyber-glass);backdrop-filter:blur(6px);flex-wrap:nowrap}
+    .filter-label{font-size:.62rem;font-weight:700;color:var(--cyber-text3);letter-spacing:1px;white-space:nowrap;font-family:'Orbitron',sans-serif}
+    .filter-chip{padding:3px 10px;border-radius:20px;border:1px solid var(--cyber-border2);background:var(--cyber-surface2);color:var(--cyber-text2);font-size:.66rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:'Inter',sans-serif}
+    .filter-chip:hover{border-color:var(--cyber-neon);color:var(--cyber-neon)}
+    .filter-chip.active{background:var(--cyber-neon);color:#000;border-color:var(--cyber-neon);box-shadow:0 0 8px var(--cyber-neon)}
+
     @media(max-width:900px){
       .app-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding-bottom:58px}
       .side-panel{flex-direction:column;gap:8px;padding:8px;max-height:none;overflow-y:visible;border-left:none;border-top:1px solid var(--cyber-border)}
@@ -175,6 +182,17 @@
     </div>
   </div>
   <div class="main-content" id="calendar"></div>
+  <div class="filter-bar" id="filterBar">
+    <span class="filter-label">⚡ FILTER:</span>
+    <button class="filter-chip active" onclick="setFilter('all')">Semua</button>
+    <button class="filter-chip" data-cat="merah" onclick="setFilter('merah')">🚨</button>
+    <button class="filter-chip" data-cat="hijau" onclick="setFilter('hijau')">✈️</button>
+    <button class="filter-chip" data-cat="kuning" onclick="setFilter('kuning')">🎂</button>
+    <button class="filter-chip" data-cat="biru" onclick="setFilter('biru')">📋</button>
+    <button class="filter-chip" data-cat="ungu" onclick="setFilter('ungu')">📚</button>
+    <button class="filter-chip" data-cat="oren" onclick="setFilter('oren')">⚽</button>
+    <button class="filter-chip" data-cat="cuti" onclick="setFilter('cuti')">🇲🇾</button>
+  </div>
   <div class="side-panel">
     <div class="side-section" id="bdaySection"><h3 onclick="toggleSection('bdaySection')">◈ COUNTDOWN <span class="sec-arrow">▾</span></h3><div class="sec-body" id="bdayList"><span style="font-size:.7rem;color:var(--cyber-text3)">Loading...</span></div>
       <button class="btn btn-pri btn-sm" onclick="openBdayAdd()" style="margin-top:6px;width:100%;justify-content:center">+ TAMBAH</button></div>
@@ -232,6 +250,7 @@
 <script>
 var CATS={merah:{id:'merah',label:'Kecemasan',color:'#ff1744',icon:'🚨'},hijau:{id:'hijau',label:'Cuti',color:'#00e676',icon:'✈️'},kuning:{id:'kuning',label:'Birthday',color:'#ffb300',icon:'🎂'},biru:{id:'biru',label:'Tugasan',color:'#00f3ff',icon:'📋'},ungu:{id:'ungu',label:'Sekolah',color:'#7928ca',icon:'📚'},oren:{id:'oren',label:'Sukan',color:'#ff0080',icon:'⚽'},cuti:{id:'cuti',label:'Cuti Umum',color:'#4dd0e1',icon:'🇲🇾'}};
 var selectedCat='biru';
+var activeFilter='all';
 function renderCatGrid(a){var h='';Object.values(CATS).forEach(function(c){h+='<div class="cat-chip'+(a===c.id?' selected':'')+'" style="border-color:'+(a===c.id?'var(--cyber-neon)':'var(--cyber-border)')+';color:'+(a===c.id?'var(--cyber-neon)':'var(--cyber-text2)')+'" onclick="selectCat(\''+c.id+'\')"><span class="cat-ico">'+c.icon+'</span>'+c.label+'</div>'});document.getElementById('catGrid').innerHTML=h}
 function selectCat(id){selectedCat=id;renderCatGrid(id)}
 
@@ -262,12 +281,15 @@ var calendar;
 document.addEventListener('DOMContentLoaded',function(){
   loadSettings();loadAll();
   var isMobile=window.innerWidth<=900;
-  var toolbarRight=isMobile?'listMonth,dayGridMonth':'dayGridMonth,timeGridWeek';
+  // View options macam template Full Event Calendar: Month/Week/Day/Year + List
+  var toolbarRight=isMobile?'listMonth,dayGridMonth':'dayGridMonth,timeGridWeek,timeGridDay,multiMonthYear,listMonth';
   calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     initialView:isMobile?'listMonth':'dayGridMonth',
     headerToolbar:{left:'prev,next today',center:'title',right:toolbarRight},
+    buttonText:{today:'Hari Ini',month:'Bulan',week:'Minggu',day:'Hari',listMonth:'Senarai',multiMonthYear:'Tahun'},
     height:isMobile?'auto':'100%',locale:'ms',firstDay:1,selectable:true,editable:true,
     eventDurationEditable:false,events:fetchEvents,
+    nowIndicator:true,
     select:function(info){openEventModal(null,info.startStr,info.endStr||info.startStr)},
     eventClick:function(info){if(info.event.extendedProps.category==='cuti'){toast(info.event.title,'success');return}openEventModal(info.event)},
     eventDrop:function(info){updateFromDrop(info.event)},
@@ -278,8 +300,18 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 async function loadSettings(){try{var r=await fetch('/api/settings').then(function(r){return r.json()});document.getElementById('familyName').textContent=r.family_name||'FAMILY CALENDAR';document.title=r.family_name||'Family Calendar';var theme=r.theme||'cyber';document.documentElement.setAttribute('data-theme',theme);var zone=r.zone||'B';if(calendar)calendar.setOption('firstDay',zone==='A'?0:1)}catch(e){}}
-function fetchEvents(info,success,fail){api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){if(r.ok)success(r.data);else fail()}).catch(fail)}
+function fetchEvents(info,success,fail){api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){if(r.ok){var evs=r.data;if(activeFilter!=='all')evs=evs.filter(function(e){return e.category===activeFilter});success(evs)}else fail()}).catch(fail)}
 function updateFromDrop(event){api('/api/events/'+event.id,{method:'PUT',body:{start:event.start.toISOString(),end:event.end?event.end.toISOString():event.start.toISOString()}}).then(function(r){if(!r.ok){calendar.refetchEvents();toast('GAGAL','error')}})}
+
+// Filter by category
+function setFilter(cat){
+  activeFilter=cat;
+  document.querySelectorAll('.filter-chip').forEach(function(c){
+    c.classList.toggle('active',c.getAttribute('data-cat')===cat||(cat==='all'&&!c.getAttribute('data-cat')));
+  });
+  if(calendar)calendar.refetchEvents();
+  toast(cat==='all'?'Semua acara':'Tapis: '+CATS[cat].label,'success');
+}
 
 function openEventModal(event,startStr,endStr){document.getElementById('eventId').value=event?event.id:'';document.getElementById('modalTitle').textContent=event?'◈ EDIT ACARA':'◈ ACARA BARU';document.getElementById('evTitle').value=event?event.title:'';document.getElementById('evDesc').value=event?(event.extendedProps.description||''):'';document.getElementById('evStart').value=event?event.startStr.slice(0,16):(startStr||'').slice(0,16);document.getElementById('evEnd').value=event?(event.endStr?event.endStr.slice(0,16):''):(endStr||'').slice(0,16);document.getElementById('btnDelete').style.display=event?'inline-flex':'none';selectedCat=event?(event.extendedProps.category||'biru'):'biru';renderCatGrid(selectedCat);document.getElementById('eventModal').classList.add('show')}
 function closeModal(){document.getElementById('eventModal').classList.remove('show')}
