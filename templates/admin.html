@@ -116,15 +116,16 @@
 
   <!-- WHATSAPP REMINDER -->
   <div class="card">
-    <h3>📱 WhatsApp Bot — Reminder Automatik</h3>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Hantar reminder WhatsApp automatik setiap pagi jika ada event. Guna <strong>WhatsApp Cloud API (Meta)</strong> — tak perlu phone. Setup di <a href="https://developers.facebook.com" target="_blank" style="color:var(--green)">developers.facebook.com</a>.</p>
+    <h3>📱 WhatsApp Bot — Reminder ke Group Keluarga</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Hantar <strong>satu mesej</strong> ke WhatsApp group keluarga setiap pagi — senaraikan semua aktiviti ahli. Guna <strong>WhatsApp Cloud API (Meta)</strong>. Setup di <a href="https://developers.facebook.com" target="_blank" style="color:var(--green)">developers.facebook.com</a>.</p>
     <div class="form-grid">
       <div class="fg"><label>Aktifkan WhatsApp Bot</label>
         <div class="toggle-wrap"><div class="toggle" id="toggleWA" onclick="toggleWA()"></div><span id="waLabel" style="font-size:.8rem">OFF</span></div>
       </div>
       <div class="fg"><label>Jam Hantar Reminder</label><input type="number" id="waReminderHour" value="7" min="0" max="23"><span class="hint">0-23. Default: 7 pagi</span></div>
       <div class="fg full"><label>WhatsApp API Token (Permanent)</label><input type="text" id="waApiToken" placeholder="EAAx..."><span class="hint">Dari Meta Developer → WhatsApp → Setup → Permanent Token</span></div>
-      <div class="fg"><label>Phone Number ID #1 (Utama)</label><input type="text" id="waPhone1" placeholder="123456789..."><span class="hint">Dari Meta → WhatsApp → Phone Number ID</span></div>
+      <div class="fg full"><label>🎯 WhatsApp Group ID</label><input type="text" id="waGroupId" placeholder="123456789@g.us"><span class="hint">PENTING! Format: 123456789@g.us. Buka web.whatsapp.com → group info → copy ID dari URL</span></div>
+      <div class="fg"><label>Phone Number ID #1 (Utama)</label><input type="text" id="waPhone1" placeholder="123456789..."><span class="hint">Nombor WhatsApp pengirim #1</span></div>
       <div class="fg"><label>Phone Number ID #2 (Backup 1)</label><input type="text" id="waPhone2" placeholder="Kosongkan jika tiada"></div>
       <div class="fg"><label>Phone Number ID #3 (Backup 2)</label><input type="text" id="waPhone3" placeholder="Kosongkan jika tiada"><span class="hint">Auto-failover jika #1/#2 gagal</span></div>
     </div>
@@ -278,6 +279,7 @@ fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
   document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';
   document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
   document.getElementById('waApiToken').value=d.wa_api_token||'';
+  document.getElementById('waGroupId').value=d.wa_group_id||'';
   document.getElementById('waPhone1').value=d.wa_phone_1||'';
   document.getElementById('waPhone2').value=d.wa_phone_2||'';
   document.getElementById('waPhone3').value=d.wa_phone_3||'';
@@ -327,6 +329,7 @@ async function saveAllSettings(){
     login_icon:settings.loginIcon,
     wa_enabled:settings.waEnabled?'1':'0',
     wa_api_token:document.getElementById('waApiToken').value,
+    wa_group_id:document.getElementById('waGroupId').value,
     wa_phone_1:document.getElementById('waPhone1').value,
     wa_phone_2:document.getElementById('waPhone2').value,
     wa_phone_3:document.getElementById('waPhone3').value,

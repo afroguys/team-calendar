@@ -491,7 +491,7 @@ def run_reminders(force=False):
         db = get_db()
         # Get WhatsApp config
         config = {}
-        for key in ['wa_api_token', 'wa_phone_1', 'wa_phone_2', 'wa_phone_3', 'wa_enabled', 'wa_reminder_hour']:
+        for key in ['wa_api_token', 'wa_group_id', 'wa_phone_1', 'wa_phone_2', 'wa_phone_3', 'wa_enabled', 'wa_reminder_hour']:
             row = db.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
             config[key] = row['value'] if row else None
 
@@ -499,23 +499,19 @@ def run_reminders(force=False):
             return {'sent': 0, 'status': 'disabled', 'message': 'WhatsApp reminders disabled'}
 
         token = config.get('wa_api_token')
+        group_id = config.get('wa_group_id', '').strip()
         phones = [p for p in [config.get('wa_phone_1'), config.get('wa_phone_2'), config.get('wa_phone_3')] if p and p.strip()]
-        if not token or not phones:
-            return {'sent': 0, 'status': 'no_config', 'message': 'Token atau nombor WhatsApp belum dikonfigurasi'}
+        if not token or not phones or not group_id:
+            return {'sent': 0, 'status': 'no_config', 'message': 'Token, Group ID, atau Phone Number ID belum dikonfigurasi'}
 
-        # Get today's date
         today = datetime.date.today().isoformat()
-        hour = int(config.get('wa_reminder_hour', '7'))
 
-        # Check if already sent today
         if not force:
-            already = db.execute(
-                "SELECT value FROM settings WHERE key='wa_last_sent'"
-            ).fetchone()
+            already = db.execute("SELECT value FROM settings WHERE key='wa_last_sent'").fetchone()
             if already and already['value'] == today:
                 return {'sent': 0, 'status': 'already_sent', 'message': f'Reminder dah dihantar hari ini ({today})'}
 
-        # Get all users with events today
+        # Get ALL users with events today
         users_with_events = db.execute("""
             SELECT DISTINCT u.id, u.username, u.full_name
             FROM events e JOIN users u ON e.user_id = u.id
@@ -525,63 +521,52 @@ def run_reminders(force=False):
         if not users_with_events:
             return {'sent': 0, 'status': 'no_events', 'message': 'Tiada event untuk hari ini'}
 
-        sent_count = 0
-        failures = []
+        # Compose ONE message for the group — listing all family members' events
+        family = db.execute("SELECT value FROM settings WHERE key='family_name'").fetchone()
+        family_name = family['value'] if family else 'Family'
 
+        msg_parts = [f"🌅 *Selamat Pagi {family_name}!*", f"", f"📅 *Aktiviti Hari Ini ({today}):*", f""]
+        
         for user in users_with_events:
-            # Get user's events
             events = db.execute("""
-                SELECT title, start, "end", description, category
+                SELECT title, start, description, category
                 FROM events WHERE user_id=? AND date(start)=? AND category != 'cuti'
                 ORDER BY start
             """, (user['id'], today)).fetchall()
-
-            if not events:
-                continue
-
-            # Compose message
-            greeting = f"🌅 *Selamat Pagi {user['full_name']}*!"
-            family = db.execute("SELECT value FROM settings WHERE key='family_name'").fetchone()
-            family_name = family['value'] if family else 'Family'
-
-            msg_parts = [greeting, f"", f"📅 *Aktiviti Hari Ini ({today})*:"]
+            if not events: continue
+            
+            msg_parts.append(f"━━ *_👤 {user['full_name']}_* ━━")
             for ev in events:
                 start_time = ev['start'][11:16] if 'T' in ev['start'] else ''
-                time_str = f" ({start_time})" if start_time else ''
+                time_str = f" *({start_time})*" if start_time else ''
                 cat = CATEGORIES.get(ev['category'], {}).get('icon', '📋')
-                msg_parts.append(f"{cat} *{ev['title']}*{time_str}")
+                line = f"{cat} {ev['title']}{time_str}"
                 if ev['description']:
-                    msg_parts.append(f"   _{ev['description']}_")
-
+                    line += f" — _{ev['description']}_"
+                msg_parts.append(line)
             msg_parts.append(f"")
-            msg_parts.append(f"_{family_name} Calendar • Auto-Reminder_")
-            message = '\n'.join(msg_parts)
 
-            # Try sending with failover
-            sent = False
-            for phone_id in phones:
-                success, resp = send_whatsapp(phone_id, token, clean_wa_number(user.get('phone', '')), message)
-                if user.get('phone'):
-                    # User has phone number set
-                    pass
-                # For now, send to admin as notification of user's events
-                success, resp = send_whatsapp(phone_id, token, "", f"{message}\n\n📬 Reminder untuk {user['full_name']} (@{user['username']})")
-                if success:
-                    sent = True
-                    break
-                failures.append(f"{phone_id}: {resp}")
+        msg_parts.append(f"_Auto-Reminder • {family_name} Calendar_")
+        message = '\n'.join(msg_parts)
 
-            if sent:
-                sent_count += 1
+        # Try sending to group with failover antara nombor pengirim (phone number IDs)
+        sent = False
+        last_error = ''
+        for phone_id in phones:
+            success, resp = send_whatsapp(phone_id, token, group_id, message)
+            if success:
+                sent = True
+                break
+            last_error = str(resp)
 
         # Mark sent
         db.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('wa_last_sent', ?)", (today,))
         db.commit()
 
-        result = {'sent': sent_count, 'total_users': len(users_with_events), 'status': 'ok'}
-        if failures:
-            result['failures'] = failures[:3]
-        return result
+        if sent:
+            return {'sent': 1, 'total_users': len(users_with_events), 'status': 'ok', 'to_group': True}
+        else:
+            return {'sent': 0, 'status': 'failed', 'message': f'Gagal hantar ke group: {last_error[:200]}'}
 
 @app.route('/api/wa/send-reminder', methods=['POST'])
 @admin_required
@@ -597,10 +582,12 @@ def test_whatsapp():
     db = get_db()
     token = db.execute("SELECT value FROM settings WHERE key='wa_api_token'").fetchone()
     phone = db.execute("SELECT value FROM settings WHERE key='wa_phone_1'").fetchone()
+    group = db.execute("SELECT value FROM settings WHERE key='wa_group_id'").fetchone()
     if not token or not phone:
-        return jsonify({'status': 'no_config', 'error': 'Token atau nombor belum dikonfigurasi'}), 400
+        return jsonify({'status': 'no_config', 'error': 'Token atau Phone Number ID belum dikonfigurasi'}), 400
 
-    success, resp = send_whatsapp(phone['value'], token['value'], '', "✅ *Family Calendar*\n\nWhatsApp integration berfungsi! Reminder akan dihantar automatik setiap pagi.")
+    to = group['value'] if group and group['value'].strip() else ''
+    success, resp = send_whatsapp(phone['value'], token['value'], to, "✅ *Family Calendar*\n\nWhatsApp Bot berfungsi! Reminder akan dihantar automatik setiap pagi ke group ini.")
     return jsonify({'status': 'ok' if success else 'failed', 'response': str(resp)})
 
 # Start reminder scheduler in background thread
