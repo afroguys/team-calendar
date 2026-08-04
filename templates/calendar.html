@@ -2,65 +2,137 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Team Calendar — Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Family Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <style>
-    :root{--green:#22C55E;--green-dark:#16A34A;--green-light:#F0FDF4;--border:#DCFCE7;--text:#14532D;--text-muted:#6B7280;--white:#fff;--red:#EF4444;--radius:10px}
+    :root{
+      --green:#22C55E;--gdark:#16A34A;--red:#EF4444;--yellow:#EAB308;--blue:#3B82F6;--purple:#8B5CF6;--orange:#F97316;
+      --bg:#F8FAFC;--card:#fff;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--radius:10px
+    }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:var(--green-light);color:var(--text)}
-    .app{max-width:1200px;margin:0 auto;padding:12px 16px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--white);border-radius:var(--radius);box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:12px;flex-wrap:wrap;gap:8px;border:1px solid var(--border)}
-    .brand{font-size:1.2rem;font-weight:700;color:#166534;display:flex;align-items:center;gap:6px}
-    .user-info{display:flex;align-items:center;gap:10px;font-size:.85rem}
-    .user-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
-    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid transparent;font-family:inherit;transition:all .15s;text-decoration:none}
-    .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--green-dark)}
-    .btn-out{background:var(--white);color:var(--text);border-color:var(--border)}.btn-out:hover{background:var(--green-light)}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .app-layout{display:grid;grid-template-columns:1fr 340px;grid-template-rows:auto 1fr;height:100vh;gap:0}
+    .topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+    .brand{font-size:1.1rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+    .brand .icon{font-size:1.3rem}
+    .top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .user-pill{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;padding:5px 12px;border-radius:20px;background:var(--bg)}
+    .user-dot{width:10px;height:10px;border-radius:50%}
+    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 13px;border-radius:8px;font-weight:600;font-size:.8rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .12s}
+    .btn-sm{padding:5px 10px;font-size:.72rem}
+    .btn-pri{background:var(--green);color:#fff;border-color:var(--green)}.btn-pri:hover{background:var(--gdark)}
+    .btn-out{background:var(--card);color:var(--text);border-color:var(--border)}.btn-out:hover{background:#F1F5F9}
     .btn-red{background:var(--red);color:#fff}
-    #calendar{margin-top:8px}
-    .fc{font-family:'Inter',sans-serif!important}
-    .fc .fc-toolbar-title{font-size:1.1rem!important;font-weight:700!important;color:var(--text)!important}
-    .fc .fc-button{background:var(--white)!important;border-color:var(--border)!important;color:var(--text)!important;border-radius:8px!important;font-weight:600!important;font-size:.82rem!important;padding:6px 13px!important;text-transform:none!important}
-    .fc .fc-button-primary{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
-    .fc .fc-button-primary:hover{background:var(--green-dark)!important}
-    .fc .fc-today-button{background:var(--green-light)!important}
-    .fc .fc-day-today{background:#ECFDF5!important}
-    .fc .fc-col-header-cell{background:var(--white)!important;padding:8px!important;font-weight:600!important;font-size:.82rem!important;color:var(--text)!important}
-    .fc .fc-timegrid-slot{height:36px!important}
-    .fc .fc-event{cursor:pointer;border-radius:6px!important;border:none!important;padding:3px 6px!important;font-size:.78rem!important;font-weight:500!important}
-    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;padding:16px}
+    
+    .main-content{padding:8px;overflow-y:auto}
+    .side-panel{background:var(--card);border-left:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px}
+
+    /* FullCalendar overrides */
+    .fc{font-family:'Inter',sans-serif!important;font-size:.82rem!important}
+    .fc .fc-toolbar-title{font-size:1rem!important;font-weight:700!important}
+    .fc .fc-button{padding:5px 10px!important;font-size:.75rem!important;font-weight:600!important;border-radius:8px!important;text-transform:none!important}
+    .fc .fc-button-primary{background:var(--green)!important;border-color:var(--green)!important}
+    .fc .fc-today-button{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
+    .fc .fc-day-today{background:#F0FDF4!important}
+    .fc .fc-col-header-cell{background:var(--card)!important;font-weight:600!important;font-size:.75rem!important;padding:6px!important;text-transform:uppercase}
+    .fc .fc-event{border-radius:6px!important;border:none!important;padding:2px 6px!important;font-size:.72rem!important;font-weight:500!important;cursor:pointer!important}
+    .fc .fc-timegrid-slot{height:32px!important}
+    .fc .fc-event:hover{filter:brightness(1.1)}
+
+    /* Side panels */
+    .side-section{background:var(--bg);border-radius:var(--radius);padding:12px 14px;border:1px solid var(--border)}
+    .side-section h3{font-size:.85rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .side-section h3 .ico{font-size:1rem}
+    
+    /* Birthday countdown */
+    .bday-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+    .bday-item:last-child{border-bottom:none}
+    .bday-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;color:#fff;flex-shrink:0}
+    .bday-info{flex:1}
+    .bday-info strong{display:block;font-size:.82rem}
+    .bday-info span{font-size:.7rem;color:var(--muted)}
+    .bday-countdown{background:var(--yellow);color:#92400E;padding:3px 8px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap}
+    .bday-today{background:var(--red)!important;color:#fff!important;animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+    /* Chore board */
+    .chore-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+    .chore-item:last-child{border-bottom:none}
+    .chore-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:transparent;transition:all .12s}
+    .chore-check.done{background:var(--green);border-color:var(--green);color:#fff}
+    .chore-name{flex:1}
+    .chore-name.done{text-decoration:line-through;color:var(--muted)}
+    .chore-assigned{font-size:.68rem;color:var(--muted)}
+    .chore-del{color:var(--muted);cursor:pointer;font-size:.8rem;background:none;border:none;padding:2px;opacity:0;transition:opacity .12s}
+    .chore-item:hover .chore-del{opacity:1}
+
+    /* Legend */
+    .legend{display:flex;flex-wrap:wrap;gap:6px}
+    .legend-tag{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:var(--card);font-size:.68rem;font-weight:600;border:1px solid var(--border)}
+
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:16px}
     .modal-overlay.show{display:flex}
-    .modal{background:var(--white);border-radius:16px;padding:24px;max-width:460px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.12)}
-    .modal h3{font-size:1.05rem;margin-bottom:14px;color:var(--text)}
-    .modal .fg{margin-bottom:12px}
-    .modal .fg label{display:block;font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:3px}
-    .modal .fg input,.modal .fg textarea,.modal .fg select{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.85rem;font-family:inherit}
-    .modal .fg input:focus,.modal .fg textarea:focus{outline:none;border-color:var(--green)}
-    .modal .fg textarea{resize:vertical;min-height:60px}
-    .modal .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+    .modal{background:var(--card);border-radius:14px;padding:22px;max-width:460px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
+    .modal h3{font-size:1rem;margin-bottom:14px}
+    .fg{margin-bottom:10px}.fg label{display:block;font-size:.75rem;font-weight:600;margin-bottom:3px;color:var(--text)}
+    .fg input,.fg textarea,.fg select{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.84rem;font-family:inherit}
+    .fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--green)}
+    .fg textarea{resize:vertical;min-height:55px}
+    .category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+    .cat-chip{text-align:center;padding:8px 4px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-size:.7rem;font-weight:600;transition:all .12s;background:var(--bg)}
+    .cat-chip:hover{border-color:var(--muted)}
+    .cat-chip.selected{opacity:1;transform:scale(1.03)}
+    .cat-chip .cat-ico{display:block;font-size:1.2rem;margin-bottom:2px}
+    .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
     .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.82rem;transform:translateY(100px);opacity:0;transition:all .3s}
     .toast.show{transform:translateY(0);opacity:1}
     .toast-success{background:#059669}.toast-error{background:var(--red)}
-    .legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:.78rem;color:var(--text-muted);padding:4px 0}
-    .legend-item{display:flex;align-items:center;gap:5px}
-    .legend-dot{width:10px;height:10px;border-radius:50%}
-    @media(max-width:768px){.topbar{flex-direction:column;align-items:flex-start}.fc .fc-toolbar{flex-direction:column!important;gap:8px!important}}
+
+    @media(max-width:900px){
+      .app-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
+      .side-panel{flex-direction:row;flex-wrap:wrap;gap:8px;padding:10px;max-height:40vh;overflow-y:auto;border-left:none;border-top:1px solid var(--border)}
+      .side-section{flex:1;min-width:200px}
+      .category-grid{grid-template-columns:repeat(2,1fr)}
+    }
   </style>
 </head>
 <body>
-<div class="app">
+
+<div class="app-layout">
+  <!-- TOP BAR -->
   <div class="topbar">
-    <div class="brand">📅 Team Calendar</div>
+    <div class="brand"><span class="icon">👨‍👩‍👧‍👦</span><span id="familyName">Family Calendar</span></div>
     <div class="legend" id="legend"></div>
-    <div class="user-info">
-      <span class="user-dot" id="myColor"></span>
-      <strong id="myName">...</strong>
-      <a href="#" id="adminLink" class="btn btn-out" style="display:none">⚙️ Admin</a>
-      <button class="btn btn-out" onclick="logout()">🚪 Keluar</button>
+    <div class="top-actions">
+      <span class="user-pill"><span class="user-dot" id="myDot"></span><span id="myName">...</span></span>
+      <a href="#" id="adminLink" class="btn btn-out btn-sm" style="display:none">⚙️ Admin</a>
+      <button class="btn btn-out btn-sm" onclick="logout()">🚪</button>
     </div>
   </div>
-  <div id="calendar"></div>
+
+  <!-- MAIN CALENDAR -->
+  <div class="main-content" id="calendar"></div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+    <!-- Countdown -->
+    <div class="side-section">
+      <h3><span class="ico">🎂</span>Countdown Hari Lahir</h3>
+      <div id="bdayList"><span style="font-size:.75rem;color:var(--muted)">Loading...</span></div>
+      <button class="btn btn-out btn-sm" onclick="document.getElementById('bdayModal').classList.add('show')" style="margin-top:8px;width:100%;justify-content:center">➕ Tambah</button>
+    </div>
+    <!-- Chore Board -->
+    <div class="side-section">
+      <h3><span class="ico">📋</span>Papan Tugasan</h3>
+      <div id="choreList"><span style="font-size:.75rem;color:var(--muted)">Loading...</span></div>
+      <form onsubmit="addChore(event)" style="display:flex;gap:6px;margin-top:8px">
+        <input type="text" id="choreNew" placeholder="Tugasan baru..." style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;font-family:inherit">
+        <button class="btn btn-pri btn-sm">+</button>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- EVENT MODAL -->
@@ -69,14 +141,32 @@
     <h3 id="modalTitle">📝 Acara Baru</h3>
     <form onsubmit="saveEvent(event)">
       <input type="hidden" id="eventId">
-      <div class="fg"><label>Tajuk *</label><input type="text" id="evTitle" required placeholder="Cth: Meeting Projek A"></div>
-      <div class="fg"><label>Deskripsi</label><textarea id="evDesc" placeholder="Nota tambahan..."></textarea></div>
+      <div class="fg"><label>Tajuk *</label><input type="text" id="evTitle" required></div>
+      <div class="fg"><label>Deskripsi</label><textarea id="evDesc"></textarea></div>
       <div class="fg"><label>Mula *</label><input type="datetime-local" id="evStart" required></div>
       <div class="fg"><label>Tamat</label><input type="datetime-local" id="evEnd"></div>
+      <label style="font-size:.75rem;font-weight:600;margin-bottom:4px;display:block">Kategori Warna</label>
+      <div class="category-grid" id="catGrid"></div>
       <div class="btn-row">
-        <button type="button" class="btn btn-red" id="btnDelete" style="display:none;margin-right:auto" onclick="deleteEvent()">🗑️ Padam</button>
-        <button type="button" class="btn btn-out" onclick="closeModal()">Batal</button>
-        <button type="submit" class="btn btn-pri">💾 Simpan</button>
+        <button type="button" class="btn btn-red btn-sm" id="btnDelete" style="display:none;margin-right:auto" onclick="deleteEvent()">🗑️</button>
+        <button type="button" class="btn btn-out btn-sm" onclick="closeModal()">Batal</button>
+        <button type="submit" class="btn btn-pri btn-sm">💾 Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- BIRTHDAY MODAL -->
+<div class="modal-overlay" id="bdayModal">
+  <div class="modal">
+    <h3>🎂 Tambah Hari Lahir</h3>
+    <form onsubmit="addBirthday(event)">
+      <div class="fg"><label>Nama *</label><input type="text" id="bdName" required></div>
+      <div class="fg"><label>Tarikh Lahir *</label><input type="date" id="bdDate" required></div>
+      <div class="fg"><label>Nota (hadiah/cadangan)</label><input type="text" id="bdNote"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-out btn-sm" onclick="document.getElementById('bdayModal').classList.remove('show')">Batal</button>
+        <button type="submit" class="btn btn-pri btn-sm">💾 Simpan</button>
       </div>
     </form>
   </div>
@@ -85,76 +175,90 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== CATEGORIES =====
+var CATS={
+  merah:{id:'merah',label:'Kecemasan / Doktor',color:'#EF4444',icon:'🚨'},
+  hijau:{id:'hijau',label:'Cuti & Percutian',color:'#22C55E',icon:'✈️'},
+  kuning:{id:'kuning',label:'Hari Lahir / Ulang Tahun',color:'#EAB308',icon:'🎂'},
+  biru:{id:'biru',label:'Tugasan Harian',color:'#3B82F6',icon:'📋'},
+  ungu:{id:'ungu',label:'Sekolah / Aktiviti',color:'#8B5CF6',icon:'📚'},
+  oren:{id:'oren',label:'Sukan / Riadah',color:'#F97316',icon:'⚽'}
+};
+var selectedCat='hijau';
+
+function renderCatGrid(active){
+  var h=''; var cats=Object.values(CATS);
+  cats.forEach(function(c){
+    h+='<div class="cat-chip'+(active===c.id?' selected':'')+'" style="background:'+c.color+'15;border-color:'+(active===c.id?c.color:'var(--border)')+'" onclick="selectCat(\''+c.id+'\')"><span class="cat-ico">'+c.icon+'</span>'+c.label+'</div>';
+  });
+  document.getElementById('catGrid').innerHTML=h;
+}
+
+function selectCat(id){selectedCat=id;renderCatGrid(id)}
+
 // ===== AUTH =====
 var token=localStorage.getItem('token');
 var user=JSON.parse(localStorage.getItem('user')||'{}');
-if(!token||!user.id){window.location.href='/login'}
+if(!token||!user.id)window.location.href='/login';
 document.getElementById('myName').textContent=user.full_name||user.username;
-var mc=document.getElementById('myColor');mc.style.background=user.color||'#22C55E';
+var md=document.getElementById('myDot');md.style.background=user.color||'#3B82F6';
 if(user.is_admin)document.getElementById('adminLink').style.display='inline-flex';
 
 function logout(){localStorage.clear();window.location.href='/login'}
 
-async function api(url,opts={}){
-  var h=opts.headers||{};h['Authorization']='Bearer '+token;
-  if(opts.body&&typeof opts.body==='object'){h['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
-  return fetch(url,{...opts,headers:h}).then(r=>r.json().then(d=>({ok:r.ok,status:r.status,data:d})));
+async function api(url,opts){
+  if(!opts)opts={};if(!opts.headers)opts.headers={};
+  opts.headers['Authorization']='Bearer '+token;
+  if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
+  return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})});
 }
 
 // ===== CALENDAR =====
 var calendar;
-var allUsers=[];
 document.addEventListener('DOMContentLoaded',function(){
-  loadUsers().then(function(){
-    var el=document.getElementById('calendar');
-    calendar=new FullCalendar.Calendar(el,{
-      initialView:'dayGridMonth',
-      headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek'},
-      height:'auto',
-      locale:'ms',
-      firstDay:1,
-      selectable:true,
-      editable:true,
-      eventDurationEditable:false,
-      events:fetchEvents,
-      select:function(info){openModal(null,info.startStr,info.endStr||info.startStr)},
-      eventClick:function(info){openModal(info.event)},
-      eventDrop:function(info){updateEventFromDrop(info.event)},
-      eventResize:function(info){updateEventFromDrop(info.event)},
-      loading:function(bool){}
-    });
-    calendar.render();
+  loadSettings();
+  loadAll();
+
+  calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
+    initialView:'dayGridMonth',headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek'},
+    height:'100%',locale:'ms',firstDay:1,selectable:true,editable:true,eventDurationEditable:false,
+    events:fetchEvents,
+    select:function(info){openEventModal(null,info.startStr,info.endStr||info.startStr)},
+    eventClick:function(info){openEventModal(info.event)},
+    eventDrop:function(info){updateFromDrop(info.event)},
+    eventResize:function(info){updateFromDrop(info.event)}
   });
+  calendar.render();
+  renderCatGrid('hijau');
 });
 
-async function loadUsers(){
-  if(user.is_admin){
-    try{var r=await api('/api/users');if(r.ok)allUsers=r.data}catch(e){}
-  }
-  // Build legend
-  var resp=await api('/api/events?start='+new Date().toISOString().slice(0,7)+'-01');
-  if(resp.ok){
-    var users={};resp.data.forEach(function(e){if(e.userName&&!users[e.userId])users[e.userId]={name:e.userName,color:e.userColor}});
-    var h='';Object.values(users).forEach(function(u){h+='<span class="legend-item"><span class="legend-dot" style="background:'+u.color+'"></span>'+u.name+'</span>'});
-    document.getElementById('legend').innerHTML=h||'<span>Tiada aktiviti bulan ini</span>';
-  }
+async function loadSettings(){
+  try{var r=await fetch('/api/settings').then(function(r){return r.json()});
+    document.getElementById('familyName').textContent=r.family_name||'Family Calendar';
+    document.title=(r.family_name||'Family')+' Calendar';
+  }catch(e){}
 }
 
-function fetchEvents(info,successCallback,failureCallback){
-  api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){
-    if(r.ok)successCallback(r.data);else failureCallback(r.data.error);
-  }).catch(function(e){failureCallback(e)});
+function fetchEvents(info,success,fail){
+  api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){if(r.ok)success(r.data);else fail()}).catch(fail);
 }
 
-// ===== MODAL =====
-function openModal(event,startStr,endStr){
+function updateFromDrop(event){
+  api('/api/events/'+event.id,{method:'PUT',body:{start:event.start.toISOString(),end:event.end?event.end.toISOString():event.start.toISOString()}})
+    .then(function(r){if(!r.ok){calendar.refetchEvents();toast('❌ Gagal','error')}});
+}
+
+// ===== EVENT MODAL =====
+function openEventModal(event,startStr,endStr){
   document.getElementById('eventId').value=event?event.id:'';
   document.getElementById('modalTitle').textContent=event?'✏️ Edit Acara':'📝 Acara Baru';
   document.getElementById('evTitle').value=event?event.title:'';
-  document.getElementById('evDesc').value=event?event.extendedProps.description||'':'';
+  document.getElementById('evDesc').value=event?(event.extendedProps.description||''):'';
   document.getElementById('evStart').value=event?event.startStr.slice(0,16):(startStr||'').slice(0,16);
-  document.getElementById('evEnd').value=event?event.endStr?event.endStr.slice(0,16):'':(endStr||'').slice(0,16);
+  document.getElementById('evEnd').value=event?(event.endStr?event.endStr.slice(0,16):''):(endStr||'').slice(0,16);
   document.getElementById('btnDelete').style.display=event?'inline-flex':'none';
+  selectedCat=event?(event.extendedProps.category||'hijau'):'hijau';
+  renderCatGrid(selectedCat);
   document.getElementById('eventModal').classList.add('show');
 }
 
@@ -163,34 +267,90 @@ function closeModal(){document.getElementById('eventModal').classList.remove('sh
 async function saveEvent(e){
   e.preventDefault();
   var id=document.getElementById('eventId').value;
-  var data={title:document.getElementById('evTitle').value,description:document.getElementById('evDesc').value,start:document.getElementById('evStart').value,end:document.getElementById('evEnd').value||document.getElementById('evStart').value};
-  data.color=user.color||'#22C55E';
-  var r;
-  if(id){r=await api('/api/events/'+id,{method:'PUT',body:data})}
-  else{r=await api('/api/events',{method:'POST',body:data})}
-  if(r.ok){calendar.refetchEvents();closeModal();loadUsers();toast('✅ Disimpan!')}
-  else toast('❌ '+r.data.error,'error')
+  var data={title:document.getElementById('evTitle').value,description:document.getElementById('evDesc').value,
+    start:document.getElementById('evStart').value,end:document.getElementById('evEnd').value||document.getElementById('evStart').value,
+    category:selectedCat,color:CATS[selectedCat].color};
+  var r=id?await api('/api/events/'+id,{method:'PUT',body:data}):await api('/api/events',{method:'POST',body:data});
+  if(r.ok){calendar.refetchEvents();closeModal();loadAll();toast('✅ Disimpan!')}else toast('❌ '+r.data.error,'error')
 }
 
 async function deleteEvent(){
   if(!confirm('Padam acara ini?'))return;
   var id=document.getElementById('eventId').value;
   var r=await api('/api/events/'+id,{method:'DELETE'});
-  if(r.ok){calendar.refetchEvents();closeModal();loadUsers();toast('🗑️ Dipadam')}
-  else toast('❌ '+r.data.error,'error')
+  if(r.ok){calendar.refetchEvents();closeModal();loadAll();toast('🗑️ Dipadam')}else toast('❌ '+r.data.error,'error')
 }
 
-async function updateEventFromDrop(event){
-  var r=await api('/api/events/'+event.id,{method:'PUT',body:{start:event.start.toISOString(),end:event.end?event.end.toISOString():event.start.toISOString()}});
-  if(!r.ok){calendar.refetchEvents();toast('❌ '+r.data.error,'error')}
+// ===== BIRTHDAYS =====
+async function loadBirthdays(){
+  var r=await api('/api/birthdays');
+  var list=document.getElementById('bdayList');
+  if(!r.ok){list.innerHTML='<span style="font-size:.72rem">Ralat</span>';return}
+  var colors=['#EF4444','#F97316','#EAB308','#22C55E','#3B82F6','#8B5CF6','#EC4899'];
+  list.innerHTML=r.data.slice(0,5).map(function(b,i){
+    var cls=b.daysLeft===0?' bday-today':'';
+    return '<div class="bday-item"><div class="bday-avatar" style="background:'+colors[i%colors.length]+'">'+b.name[0]+'</div>'+
+      '<div class="bday-info"><strong>'+b.name+'</strong><span>'+b.date+' • Umur '+b.age+'</span></div>'+
+      '<span class="bday-countdown'+cls+'">'+ (b.daysLeft===0?'🎉 HARI INI!':b.daysLeft+' hari')+'</span></div>';
+  }).join('')||'<span style="font-size:.72rem;color:var(--muted)">Tiada hari lahir</span>';
+}
+
+async function addBirthday(e){
+  e.preventDefault();
+  var r=await api('/api/birthdays',{method:'POST',body:{name:document.getElementById('bdName').value,date:document.getElementById('bdDate').value,note:document.getElementById('bdNote').value}});
+  if(r.ok){document.getElementById('bdayModal').classList.remove('show');loadBirthdays();toast('✅ Disimpan')}else toast('❌ Gagal','error')
+}
+
+// ===== CHORES =====
+async function loadChores(){
+  var r=await api('/api/chores');
+  var list=document.getElementById('choreList');
+  if(!r.ok){list.innerHTML='Ralat';return}
+  list.innerHTML=r.data.map(function(c){
+    return '<div class="chore-item"><div class="chore-check'+(c.done?' done':'')+'" onclick="toggleChore('+c.id+','+c.done+')">✓</div>'+
+      '<span class="chore-name'+(c.done?' done':'')+'">'+c.title+'</span>'+
+      '<span class="chore-assigned" style="color:'+c.assignedColor+'">'+c.assignedName+'</span>'+
+      (c.editable?'<button class="chore-del" onclick="delChore('+c.id+')">✕</button>':'')+'</div>';
+  }).join('')||'<span style="font-size:.72rem;color:var(--muted)">Tiada tugasan</span>';
+}
+
+async function toggleChore(id,currentDone){
+  await api('/api/chores/'+id,{method:'PUT',body:{done:currentDone?0:1}});
+  loadChores();
+}
+
+async function addChore(e){
+  e.preventDefault();
+  var inp=document.getElementById('choreNew');if(!inp.value.trim())return;
+  var r=await api('/api/chores',{method:'POST',body:{title:inp.value.trim(),assigned_to:user.id}});
+  if(r.ok){inp.value='';loadChores();toast('✅ Ditambah')}else toast('❌ Gagal','error')
+}
+
+async function delChore(id){
+  var r=await api('/api/chores/'+id,{method:'DELETE'});
+  if(r.ok)loadChores();
+}
+
+// ===== LOAD ALL SIDE DATA =====
+function loadAll(){
+  // Load legend
+  api('/api/users').then(function(r){
+    if(r.ok){
+      var h='';r.data.forEach(function(u){h+='<span class="legend-tag"><span class="user-dot" style="background:'+u.color+'"></span>'+u.full_name+'</span>'});
+      document.getElementById('legend').innerHTML=h;
+    }
+  });
+  loadBirthdays();
+  loadChores();
 }
 
 // ===== TOAST =====
 function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}
 
-// Close modal on escape
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()});
+// Keyboard + outside click close
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();document.getElementById('bdayModal').classList.remove('show')}});
 document.getElementById('eventModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+document.getElementById('bdayModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')});
 </script>
 </body>
 </html>

@@ -2,43 +2,52 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Team Calendar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Admin — Family Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{--green:#22C55E;--green-dark:#16A34A;--green-light:#F0FDF4;--border:#DCFCE7;--text:#14532D;--white:#fff;--red:#EF4444}
+    :root{--green:#22C55E;--gdark:#16A34A;--red:#EF4444;--text:#1E293B;--muted:#64748B;--bg:#F8FAFC;--card:#fff;--border:#E2E8F0;--radius:10px}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:var(--green-light);color:var(--text);min-height:100vh}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--white);border-bottom:1px solid var(--border)}
-    .brand{font-size:1.15rem;font-weight:700;color:#166534}
-    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .15s}
-    .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--green-dark)}
-    .btn-out{background:var(--white);color:var(--text);border-color:var(--border)}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border)}
+    .brand{font-size:1.1rem;font-weight:800}
+    .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:.8rem;cursor:pointer;border:1px solid transparent;font-family:inherit;text-decoration:none;transition:all .12s}
+    .btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--gdark)}
+    .btn-out{background:var(--card);color:var(--text);border-color:var(--border)}.btn-out:hover{background:#F1F5F9}
     .btn-red{background:var(--red);color:#fff}
     .container{max-width:900px;margin:0 auto;padding:20px}
-    .card{background:var(--white);border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:16px;border:1px solid var(--border)}
-    .card h3{font-size:1rem;margin-bottom:14px}
-    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.03);margin-bottom:16px;border:1px solid var(--border)}
+    .card h3{font-size:.95rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .fg{display:flex;flex-direction:column;gap:3px}
+    .fg label{font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
+    .fg input,.fg select{padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.84rem;font-family:inherit}
+    .fg input:focus,.fg select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+    .hint{font-size:.68rem;color:var(--muted);margin-top:2px}
+    .toggle-wrap{display:flex;align-items:center;gap:10px}
+    .toggle{position:relative;width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;transition:background .15s}
+    .toggle.on{background:var(--green)}
+    .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .15s}
+    .toggle.on::after{transform:translateX(20px)}
+    table{width:100%;border-collapse:collapse;font-size:.82rem}
     th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
-    th{font-weight:600;background:var(--green-light);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
-    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
-    .badge{font-size:.68rem;padding:2px 8px;border-radius:20px;font-weight:600}
-    .badge-admin{background:#FEF3C7;color:#92400E}.badge-user{background:var(--green-light);color:var(--green-dark)}
-    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;padding:16px}
+    th{font-weight:600;background:var(--bg);font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+    .badge{font-size:.65rem;padding:2px 8px;border-radius:20px;font-weight:600}
+    .badge-admin{background:#FEF3C7;color:#92400E}.badge-user{background:#DCFCE7;color:#166534}
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:16px}
     .modal-overlay.show{display:flex}
-    .modal{background:var(--white);border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.12)}
-    .modal h3{font-size:1rem;margin-bottom:14px}
-    .fg{margin-bottom:12px}.fg label{display:block;font-size:.78rem;font-weight:600;margin-bottom:3px}
-    .fg input,.fg select{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.85rem;font-family:inherit}
-    .fg input:focus,.fg select:focus{outline:none;border-color:var(--green)}
-    .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+    .modal{background:var(--card);border-radius:14px;padding:24px;max-width:400px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.15)}
+    .modal h3{font-size:.95rem;margin-bottom:14px}
+    .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
     .toast{position:fixed;bottom:20px;right:20px;z-index:3000;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;font-size:.82rem;transform:translateY(100px);opacity:0;transition:all .3s}
     .toast.show{transform:translateY(0);opacity:1}
     .toast-success{background:#059669}.toast-error{background:var(--red)}
+    @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="brand">⚙️ Admin — Team Calendar</div>
+  <div class="brand">⚙️ Admin Panel</div>
   <div style="display:flex;gap:8px">
     <a href="/" class="btn btn-out">📅 Calendar</a>
     <a href="#" class="btn btn-out" onclick="logout()">🚪 Keluar</a>
@@ -46,26 +55,45 @@
 </div>
 
 <div class="container">
+  <!-- FAMILY SETTINGS -->
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>👥 Senarai Pengguna</h3>
-      <button class="btn btn-pri" onclick="openUserModal()">➕ Tambah User</button>
+    <h3>🏠 Tetapan Keluarga</h3>
+    <div class="form-grid">
+      <div class="fg"><label>Nama Keluarga</label><input type="text" id="sFamilyName" placeholder="Keluarga Saya"><span class="hint">Dipapar di login & header calendar</span></div>
+      <div class="fg"><label>Nama Brand (title browser)</label><input type="text" id="sBrandTitle" placeholder="Family Calendar"></div>
     </div>
-    <table><thead><tr><th>ID</th><th>Username</th><th>Nama</th><th>Warna</th><th>Role</th><th>Daftar</th><th>Tindakan</th></tr></thead>
-    <tbody id="userTable"><tr><td colspan="7" style="text-align:center;color:#9CA3AF">Loading...</td></tr></tbody></table>
+    <div class="form-grid" style="margin-top:8px">
+      <div class="fg"><label>Default Password Ahli Baru</label><input type="text" id="sDefaultPass" value="member123"><span class="hint">Diguna masa admin create user</span></div>
+      <div class="fg"><label>Benarkan Pendaftaran Awam</label>
+        <div class="toggle-wrap"><div class="toggle" id="toggleRegister" onclick="toggleReg()"></div><span id="regLabel" style="font-size:.8rem">TUTUP</span></div>
+        <span class="hint">ON = sesiapa boleh register sendiri</span>
+      </div>
+    </div>
+    <div class="btn-row" style="justify-content:flex-start"><button class="btn btn-pri" onclick="saveSettings()">💾 Simpan Tetapan</button></div>
+  </div>
+
+  <!-- USERS -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin-bottom:0">👥 Ahli Keluarga</h3>
+      <button class="btn btn-pri" onclick="openUserModal()">➕ Tambah Ahli</button>
+    </div>
+    <table><thead><tr><th>ID</th><th>Username</th><th>Nama</th><th>Warna</th><th>Role</th><th>Tindakan</th></tr></thead>
+    <tbody id="userTable"></tbody></table>
   </div>
 </div>
 
+<!-- USER MODAL -->
 <div class="modal-overlay" id="userModal">
   <div class="modal">
-    <h3 id="userModalTitle">Tambah Pengguna</h3>
+    <h3 id="userModalTitle">Tambah Ahli Keluarga</h3>
     <form onsubmit="saveUser(event)">
       <input type="hidden" id="userId">
       <div class="fg"><label>Nama Penuh</label><input type="text" id="uFullName" required></div>
-      <div class="fg"><label>Username</label><input type="text" id="uUsername" required></div>
-      <div class="fg"><label>Password (kosongkan jika tak tukar)</label><input type="password" id="uPassword" minlength="4"></div>
-      <div class="fg"><label>Warna</label><input type="color" id="uColor" value="#22C55E" style="height:40px;padding:4px"></div>
-      <div class="fg"><label>Role</label><select id="uRole"><option value="0">User</option><option value="1">Admin</option></select></div>
+      <div class="fg"><label>Username</label><input type="text" id="uUsername" required><span class="hint">Untuk login</span></div>
+      <div class="fg"><label>Password</label><input type="password" id="uPassword" minlength="4"><span class="hint" id="pwHint">Kosongkan guna default</span></div>
+      <div class="fg"><label>Warna Kategori</label><input type="color" id="uColor" value="#3B82F6" style="height:38px;padding:3px"></div>
+      <div class="fg"><label>Role</label><select id="uRole"><option value="0">Ahli Biasa</option><option value="1">Admin</option></select></div>
       <div class="btn-row">
         <button type="button" class="btn btn-red" id="btnDeleteUser" style="display:none;margin-right:auto" onclick="deleteUser()">🗑️ Padam</button>
         <button type="button" class="btn btn-out" onclick="closeUserModal()">Batal</button>
@@ -80,36 +108,73 @@
 <script>
 var token=localStorage.getItem('token');
 var user=JSON.parse(localStorage.getItem('user')||'{}');
-if(!token||!user.is_admin){window.location.href='/'}
+if(!token||!user.is_admin)window.location.href='/';
 
-async function api(url,opts={}){
-  var h=opts.headers||{};h['Authorization']='Bearer '+token;
-  if(opts.body&&typeof opts.body==='object'){h['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
-  return fetch(url,{...opts,headers:h}).then(r=>r.json().then(d=>({ok:r.ok,status:r.status,data:d})));
+var allowRegister=false;
+
+async function api(url,opts){
+  if(!opts)opts={};if(!opts.headers)opts.headers={};
+  opts.headers['Authorization']='Bearer '+token;
+  if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}
+  return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})});
 }
 
 function logout(){localStorage.clear();window.location.href='/login'}
 
+// Load settings
+fetch('/api/settings').then(function(r){return r.json()}).then(function(d){
+  document.getElementById('sFamilyName').value=d.family_name||'Keluarga Saya';
+  document.getElementById('sBrandTitle').value=d.brand_title||'Family Calendar';
+  allowRegister=d.allow_register==='1';
+  updateRegToggle();
+});
+
+function updateRegToggle(){
+  var t=document.getElementById('toggleRegister');
+  if(allowRegister){t.classList.add('on');document.getElementById('regLabel').textContent='BUKA'}
+  else{t.classList.remove('on');document.getElementById('regLabel').textContent='TUTUP'}
+}
+
+function toggleReg(){allowRegister=!allowRegister;updateRegToggle()}
+
+async function saveSettings(){
+  await api('/api/settings',{method:'PUT',body:{
+    family_name:document.getElementById('sFamilyName').value,
+    brand_title:document.getElementById('sBrandTitle').value,
+    allow_register:allowRegister?'1':'0'
+  }});
+  toast('✅ Tetapan disimpan');
+}
+
+// Users
 async function loadUsers(){
   var r=await api('/api/users');
   var tbody=document.getElementById('userTable');
-  if(!r.ok){tbody.innerHTML='<tr><td colspan="7">Ralat</td></tr>';return}
-  tbody.innerHTML=r.data.map(function(u){return '<tr><td>'+u.id+'</td><td>'+u.username+'</td><td>'+u.full_name+'</td><td><span class="dot" style="background:'+u.color+'"></span>'+u.color+'</td><td><span class="badge '+(u.is_admin?'badge-admin':'badge-user')+'">'+(u.is_admin?'Admin':'User')+'</span></td><td>'+u.created_at+'</td><td><button class="btn btn-out" onclick="editUser('+u.id+')">✏️</button></td></tr>'}).join('');
+  if(!r.ok){tbody.innerHTML='<tr><td colspan="6">Ralat</td></tr>';return}
+  tbody.innerHTML=r.data.map(function(u){return '<tr><td>'+u.id+'</td><td>'+u.username+'</td><td><span class="dot" style="background:'+u.color+'"></span>'+u.full_name+'</td><td>'+u.color+'</td><td><span class="badge '+(u.is_admin?'badge-admin':'badge-user')+'">'+(u.is_admin?'Admin':'Ahli')+'</span></td><td><button class="btn btn-out" onclick="editUser('+u.id+')" style="font-size:.7rem;padding:4px 8px">✏️</button></td></tr>'}).join('');
 }
 loadUsers();
 
-function openUserModal(){resetModal();document.getElementById('userModalTitle').textContent='Tambah Pengguna';document.getElementById('userModal').classList.add('show')}
+function openUserModal(){
+  document.getElementById('userId').value='';document.getElementById('uFullName').value='';
+  document.getElementById('uUsername').value='';document.getElementById('uUsername').disabled=false;
+  document.getElementById('uPassword').value='';document.getElementById('pwHint').style.display='block';
+  document.getElementById('uColor').value='#3B82F6';document.getElementById('uRole').value='0';
+  document.getElementById('btnDeleteUser').style.display='none';
+  document.getElementById('userModalTitle').textContent='Tambah Ahli';
+  document.getElementById('userModal').classList.add('show');
+}
 function closeUserModal(){document.getElementById('userModal').classList.remove('show')}
-function resetModal(){document.getElementById('userId').value='';document.getElementById('uFullName').value='';document.getElementById('uUsername').value='';document.getElementById('uPassword').value='';document.getElementById('uColor').value='#22C55E';document.getElementById('uRole').value='0';document.getElementById('btnDeleteUser').style.display='none';document.getElementById('uUsername').disabled=false}
 
 async function editUser(id){
   var r=await api('/api/users');if(!r.ok)return;
   var u=r.data.find(function(x){return x.id===id});if(!u)return;
-  resetModal();document.getElementById('userId').value=u.id;document.getElementById('uFullName').value=u.full_name;
+  document.getElementById('userId').value=u.id;document.getElementById('uFullName').value=u.full_name;
   document.getElementById('uUsername').value=u.username;document.getElementById('uUsername').disabled=true;
+  document.getElementById('uPassword').value='';document.getElementById('pwHint').style.display='block';
   document.getElementById('uColor').value=u.color;document.getElementById('uRole').value=u.is_admin?'1':'0';
   document.getElementById('btnDeleteUser').style.display='inline-flex';
-  document.getElementById('userModalTitle').textContent='Edit Pengguna';
+  document.getElementById('userModalTitle').textContent='Edit Ahli';
   document.getElementById('userModal').classList.add('show');
 }
 
@@ -117,24 +182,25 @@ async function saveUser(e){
   e.preventDefault();
   var id=document.getElementById('userId').value;
   var data={full_name:document.getElementById('uFullName').value,color:document.getElementById('uColor').value,is_admin:document.getElementById('uRole').value==='1'};
-  var pw=document.getElementById('uPassword').value;if(pw)data.password=pw;
+  var pw=document.getElementById('uPassword').value;
 
   if(id){
+    if(pw)data.password=pw;
     var r=await api('/api/users/'+id,{method:'PUT',body:data});
-    if(r.ok){loadUsers();closeUserModal();toast('✅ User dikemaskini')}else toast('❌ '+r.data.error,'error')
+    if(r.ok){loadUsers();closeUserModal();toast('✅ Ahli dikemaskini')}else toast('❌ '+r.data.error,'error')
   }else{
-    if(!pw||pw.length<4){toast('❌ Password min 4 aksara','error');return}
-    data.username=document.getElementById('uUsername').value;data.password=pw;
+    if(!pw){pw=document.getElementById('sDefaultPass').value||'member123'}
+    data.password=pw;data.username=document.getElementById('uUsername').value;
     var r=await api('/api/register',{method:'POST',body:data});
-    if(r.ok){loadUsers();closeUserModal();toast('✅ User ditambah')}else toast('❌ '+r.data.error,'error')
+    if(r.ok){loadUsers();closeUserModal();toast('✅ Ahli ditambah')}else toast('❌ '+r.data.error,'error')
   }
 }
 
 async function deleteUser(){
   var id=document.getElementById('userId').value;
-  if(!confirm('Padam user ini? Semua event user ini juga akan dipadam.'))return;
+  if(!confirm('Padam ahli ini? Semua event, birthday & tugasan mereka akan dipadam.'))return;
   var r=await api('/api/users/'+id,{method:'DELETE'});
-  if(r.ok){loadUsers();closeUserModal();toast('🗑️ User dipadam')}else toast('❌ '+r.data.error,'error')
+  if(r.ok){loadUsers();closeUserModal();toast('🗑️ Ahli dipadam')}else toast('❌ '+r.data.error,'error')
 }
 
 function toast(msg,type){type=type||'success';var t=document.getElementById('toast');t.textContent=msg;t.className='toast toast-'+type+' show';setTimeout(function(){t.className='toast'},2500)}

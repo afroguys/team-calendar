@@ -2,52 +2,121 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — Team Calendar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Log Masuk — Family Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root{--green:#22C55E;--green-dark:#16A34A;--purple:#8B5CF6;--pink:#EC4899;--blue:#3B82F6;--gold:#EAB308;--white:#fff;--radius:14px}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:#F0FDF4;min-height:100vh;display:flex;align-items:center;justify-content:center}
-    .login-box{background:#fff;padding:40px 32px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);width:100%;max-width:400px;border:1px solid #DCFCE7}
-    .logo{text-align:center;margin-bottom:24px;font-size:1.6rem;font-weight:700;color:#166534}
-    h2{text-align:center;font-size:1.2rem;color:#14532D;margin-bottom:8px}
-    .sub{text-align:center;color:#6B7280;font-size:.85rem;margin-bottom:20px}
+    body{font-family:'Inter',sans-serif;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
+    
+    /* Animated background — inspired by 21st.dev Serafim Abstract Ripple */
+    .bg-animated{
+      position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#1A1423 0%,#2D1B3E 30%,#1E3A5F 60%,#0F172A 100%);
+    }
+    .bg-animated::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(139,92,246,.15),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(236,72,153,.12),transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(59,130,246,.1),transparent 50%)}
+    
+    /* Floating orbs */
+    .orb{position:absolute;border-radius:50%;filter:blur(60px);animation:float var(--dur) ease-in-out infinite;opacity:0.6;pointer-events:none}
+    .orb-1{width:300px;height:300px;background:var(--purple);top:10%;left:5%;--dur:8s}
+    .orb-2{width:250px;height:250px;background:var(--pink);top:60%;right:5%;--dur:10s;animation-delay:-3s}
+    .orb-3{width:200px;height:200px;background:var(--blue);bottom:10%;left:30%;--dur:12s;animation-delay:-6s}
+    .orb-4{width:180px;height:180px;background:var(--green);top:30%;right:20%;--dur:9s;animation-delay:-1s}
+    .orb-5{width:150px;height:150px;background:var(--gold);top:50%;left:50%;--dur:7s;animation-delay:-4s}
+    @keyframes float{
+      0%,100%{transform:translate(0,0) scale(1)}
+      25%{transform:translate(30px,-20px) scale(1.08)}
+      50%{transform:translate(-15px,15px) scale(0.95)}
+      75%{transform:translate(-25px,-10px) scale(1.05)}
+    }
+    
+    /* Particle dots */
+    .particles{position:absolute;inset:0;pointer-events:none}
+    .particle{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.4);animation:drift var(--d) linear infinite;animation-delay:var(--delay)}
+    @keyframes drift{
+      0%{transform:translateY(100vh) translateX(0);opacity:0}
+      10%{opacity:1}
+      90%{opacity:1}
+      100%{transform:translateY(-10vh) translateX(var(--dx));opacity:0}
+    }
+    
+    /* Login box */
+    .login-wrapper{position:relative;z-index:1;width:100%;max-width:400px;padding:20px}
+    .login-card{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:36px 28px;box-shadow:0 24px 64px rgba(0,0,0,.3)}
+    .family-icon{text-align:center;font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+    .family-name{text-align:center;font-size:1.5rem;font-weight:800;color:var(--white);margin-bottom:4px;letter-spacing:-0.3px}
+    .family-sub{text-align:center;color:rgba(255,255,255,.55);font-size:.82rem;margin-bottom:24px}
     .form-group{margin-bottom:14px}
-    .form-group label{display:block;font-size:.8rem;font-weight:600;color:#14532D;margin-bottom:4px}
-    .form-group input{width:100%;padding:11px 14px;border:2px solid #DCFCE7;border-radius:10px;font-size:.9rem;font-family:inherit;transition:border .15s}
-    .form-group input:focus{outline:none;border-color:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.1)}
-    .btn{width:100%;padding:12px;background:#22C55E;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
-    .btn:hover{background:#16A34A;transform:translateY(-1px)}
-    .error{background:#FEE2E2;color:#991B1B;padding:10px;border-radius:8px;font-size:.82rem;margin-bottom:12px;display:none;text-align:center}
-    .links{text-align:center;margin-top:14px;font-size:.85rem}
-    .links a{color:#16A34A;text-decoration:none;font-weight:600}
-    .links a:hover{text-decoration:underline}
+    .form-group label{display:block;font-size:.78rem;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:5px}
+    .form-group input{width:100%;padding:12px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:var(--white);font-size:.9rem;font-family:inherit;transition:all .15s}
+    .form-group input::placeholder{color:rgba(255,255,255,.3)}
+    .form-group input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.15);background:rgba(255,255,255,.12)}
+    .btn{width:100%;padding:13px;background:var(--green);color:var(--white);border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:.3px}
+    .btn:hover{background:var(--green-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(34,197,94,.3)}
+    .error{background:rgba(239,68,68,.15);color:#FCA5A5;padding:10px 14px;border-radius:8px;font-size:.82rem;margin-bottom:14px;display:none;text-align:center;border:1px solid rgba(239,68,68,.25)}
+    .credits{text-align:center;margin-top:16px;color:rgba(255,255,255,.25);font-size:.72rem}
+    .spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-<div class="login-box">
-  <div class="logo">📅 Team Calendar</div>
-  <h2>Log Masuk</h2>
-  <p class="sub">Masuk untuk lihat & edit planning anda</p>
-  <div class="error" id="error"></div>
-  <form id="loginForm" onsubmit="login(event)">
-    <div class="form-group"><label>Username</label><input type="text" id="username" required placeholder="username"></div>
-    <div class="form-group"><label>Password</label><input type="password" id="password" required placeholder="••••••"></div>
-    <button type="submit" class="btn">🔐 Log Masuk</button>
-  </form>
-  <div class="links">Belum ada akaun? <a href="/register">Daftar di sini</a></div>
+<div class="bg-animated">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+  <div class="orb orb-4"></div><div class="orb orb-5"></div>
+  <div class="particles" id="particles"></div>
 </div>
+
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="family-icon">👨‍👩‍👧‍👦</div>
+    <div class="family-name" id="familyName">Keluarga Saya</div>
+    <div class="family-sub">Family Calendar • Planning Bersama</div>
+    <div class="error" id="error"></div>
+    <form id="loginForm" onsubmit="login(event)">
+      <div class="form-group"><label>Username</label><input type="text" id="username" required placeholder="masukkan username" autocomplete="username"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="password" required placeholder="••••••" autocomplete="current-password"></div>
+      <button type="submit" class="btn" id="loginBtn">🔐 Log Masuk</button>
+      <div class="spinner" id="spinner"></div>
+    </form>
+  </div>
+  <div class="credits">Powered by Family Calendar • Kawalan Admin Sahaja</div>
+</div>
+
 <script>
+// Generate particles
+(function(){
+  var container = document.getElementById('particles');
+  for(var i=0;i<30;i++){
+    var p=document.createElement('div');
+    p.className='particle';
+    p.style.left=Math.random()*100+'%';
+    p.style.setProperty('--d',(8+Math.random()*12)+'s');
+    p.style.setProperty('--delay',Math.random()*8+'s');
+    p.style.setProperty('--dx',(Math.random()*60-30)+'px');
+    container.appendChild(p);
+  }
+})();
+
+// Load family name
+fetch('/api/settings').then(r=>r.json()).then(function(d){
+  document.getElementById('familyName').textContent=d.family_name||'Keluarga Saya';
+}).catch(function(){});
+
 async function login(e){
   e.preventDefault();
   document.getElementById('error').style.display='none';
+  document.getElementById('loginBtn').style.display='none';
+  document.getElementById('spinner').style.display='block';
   try{
-    var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
+    var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
     var d=await r.json();
-    if(!r.ok){document.getElementById('error').textContent=d.error;document.getElementById('error').style.display='block';return}
-    localStorage.setItem('token',d.token);
-    localStorage.setItem('user',JSON.stringify(d.user));
+    if(!r.ok){document.getElementById('error').textContent=d.error;document.getElementById('error').style.display='block';document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none';return}
+    localStorage.setItem('token',d.token);localStorage.setItem('user',JSON.stringify(d.user));
     window.location.href='/';
-  }catch(err){document.getElementById('error').textContent='Ralat rangkaian';document.getElementById('error').style.display='block'}
+  }catch(err){
+    document.getElementById('error').textContent='Ralat rangkaian — cuba lagi';document.getElementById('error').style.display='block';
+    document.getElementById('loginBtn').style.display='block';document.getElementById('spinner').style.display='none';
+  }
 }
 </script>
 </body>

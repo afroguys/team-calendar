@@ -2,49 +2,47 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar — Team Calendar</title>
+  <title>Daftar — Family Calendar</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Inter',sans-serif;background:#F0FDF4;min-height:100vh;display:flex;align-items:center;justify-content:center}
-    .box{background:#fff;padding:36px 28px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);width:100%;max-width:400px;border:1px solid #DCFCE7}
-    .logo{text-align:center;margin-bottom:20px;font-size:1.5rem;font-weight:700;color:#166534}
-    h2{text-align:center;font-size:1.15rem;color:#14532D;margin-bottom:6px}
-    .sub{text-align:center;color:#6B7280;font-size:.82rem;margin-bottom:18px}
-    .fg{margin-bottom:12px}.fg label{display:block;font-size:.78rem;font-weight:600;color:#14532D;margin-bottom:3px}
-    .fg input{width:100%;padding:10px 12px;border:2px solid #DCFCE7;border-radius:10px;font-size:.88rem;font-family:inherit}
+    .box{background:#fff;padding:36px 28px;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.05);width:100%;max-width:380px;border:1px solid #DCFCE7}
+    .logo{text-align:center;margin-bottom:18px;font-size:2rem}
+    h2{text-align:center;font-size:1.1rem;color:#14532D;margin-bottom:6px}
+    .sub{text-align:center;color:#6B7280;font-size:.8rem;margin-bottom:18px}
+    .fg{margin-bottom:12px}.fg label{display:block;font-size:.75rem;font-weight:600;color:#14532D;margin-bottom:3px}
+    .fg input{width:100%;padding:10px 12px;border:2px solid #DCFCE7;border-radius:10px;font-size:.85rem;font-family:inherit}
     .fg input:focus{outline:none;border-color:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.1)}
-    .btn{width:100%;padding:12px;background:#22C55E;color:#fff;border:none;border-radius:10px;font-size:.92rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn{width:100%;padding:12px;background:#22C55E;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
     .btn:hover{background:#16A34A}
     .error{background:#FEE2E2;color:#991B1B;padding:10px;border-radius:8px;font-size:.8rem;margin-bottom:12px;display:none;text-align:center}
-    .links{text-align:center;margin-top:12px;font-size:.83rem}
+    .links{text-align:center;margin-top:12px;font-size:.8rem}
     .links a{color:#16A34A;text-decoration:none;font-weight:600}
   </style>
 </head>
 <body>
 <div class="box">
-  <div class="logo">📅 Team Calendar</div>
-  <h2>Daftar Akaun Baru</h2>
-  <p class="sub">Isi maklumat untuk mula guna calendar</p>
+  <div class="logo">👨‍👩‍👧‍👦</div>
+  <h2>Daftar Akaun</h2>
+  <p class="sub">Pendaftaran mungkin ditutup — hubungi admin keluarga anda</p>
   <div class="error" id="error"></div>
   <form onsubmit="register(event)">
-    <div class="fg"><label>Nama Penuh</label><input type="text" id="full_name" required placeholder="Cth: Ahmad Ali"></div>
+    <div class="fg"><label>Nama Penuh</label><input type="text" id="full_name" required placeholder="Cth: Ahmad"></div>
     <div class="fg"><label>Username</label><input type="text" id="username" required placeholder="ahmad"></div>
     <div class="fg"><label>Password</label><input type="password" id="password" required placeholder="Min 4 aksara" minlength="4"></div>
     <button type="submit" class="btn">✅ Daftar</button>
   </form>
-  <div class="links">Sudah ada akaun? <a href="/login">Log masuk</a></div>
+  <div class="links"><a href="/login">← Kembali ke log masuk</a></div>
 </div>
 <script>
 async function register(e){
-  e.preventDefault();
-  document.getElementById('error').style.display='none';
+  e.preventDefault();document.getElementById('error').style.display='none';
   try{
     var r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:document.getElementById('full_name').value,username:document.getElementById('username').value,password:document.getElementById('password').value})});
     var d=await r.json();
     if(!r.ok){document.getElementById('error').textContent=d.error;document.getElementById('error').style.display='block';return}
-    alert('Pendaftaran berjaya! Sila log masuk.');
-    window.location.href='/login';
+    alert('Pendaftaran berjaya! Sila log masuk.');window.location.href='/login';
   }catch(err){document.getElementById('error').textContent='Ralat rangkaian';document.getElementById('error').style.display='block'}
 }
 </script>
