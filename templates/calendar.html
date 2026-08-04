@@ -39,6 +39,9 @@
     .fc .fc-event{border-radius:6px!important;border:none!important;padding:2px 6px!important;font-size:.72rem!important;font-weight:500!important;cursor:pointer!important}
     .fc .fc-timegrid-slot{height:32px!important}
     .fc .fc-event:hover{filter:brightness(1.1)}
+    /* Holiday events */
+    .holiday-event{border-radius:3px!important;padding:1px 5px!important;font-size:.65rem!important;opacity:.85;border-left:3px solid #6B7280!important;background:#F3F4F6!important;color:#374151!important}
+    .holiday-event:hover{opacity:1!important;filter:none!important}
 
     /* Side panels */
     .side-section{background:var(--bg);border-radius:var(--radius);padding:12px 14px;border:1px solid var(--border)}
@@ -182,7 +185,8 @@ var CATS={
   kuning:{id:'kuning',label:'Hari Lahir / Ulang Tahun',color:'#EAB308',icon:'🎂'},
   biru:{id:'biru',label:'Tugasan Harian',color:'#3B82F6',icon:'📋'},
   ungu:{id:'ungu',label:'Sekolah / Aktiviti',color:'#8B5CF6',icon:'📚'},
-  oren:{id:'oren',label:'Sukan / Riadah',color:'#F97316',icon:'⚽'}
+  oren:{id:'oren',label:'Sukan / Riadah',color:'#F97316',icon:'⚽'},
+  cuti:{id:'cuti',label:'Cuti Umum / Sekolah',color:'#6B7280',icon:'🇲🇾'}
 };
 var selectedCat='hijau';
 
@@ -224,9 +228,18 @@ document.addEventListener('DOMContentLoaded',function(){
     height:'100%',locale:'ms',firstDay:1,selectable:true,editable:true,eventDurationEditable:false,
     events:fetchEvents,
     select:function(info){openEventModal(null,info.startStr,info.endStr||info.startStr)},
-    eventClick:function(info){openEventModal(info.event)},
+    eventClick:function(info){
+      var cat=info.event.extendedProps.category;
+      if(cat==='cuti'){
+        // Holiday — show info toast instead of edit modal
+        toast(info.event.title+' — '+info.event.extendedProps.description,'success');
+        return;
+      }
+      openEventModal(info.event)
+    },
     eventDrop:function(info){updateFromDrop(info.event)},
-    eventResize:function(info){updateFromDrop(info.event)}
+    eventResize:function(info){updateFromDrop(info.event)},
+    eventClassNames:function(arg){return arg.event.extendedProps.category==='cuti'?['holiday-event']:[]}
   });
   calendar.render();
   renderCatGrid('hijau');
@@ -337,6 +350,8 @@ function loadAll(){
   api('/api/users').then(function(r){
     if(r.ok){
       var h='';r.data.forEach(function(u){h+='<span class="legend-tag"><span class="user-dot" style="background:'+u.color+'"></span>'+u.full_name+'</span>'});
+      // Add holiday legend
+      h+='<span class="legend-tag" style="color:#6B7280">🇲🇾 Cuti Umum & Sekolah</span>';
       document.getElementById('legend').innerHTML=h;
     }
   });

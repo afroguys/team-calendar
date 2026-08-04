@@ -15,6 +15,7 @@ CATEGORIES = {
     'biru': {'id':'biru','label':'Tugasan Harian','color':'#3B82F6','icon':'📋'},
     'ungu': {'id':'ungu','label':'Sekolah / Aktiviti','color':'#8B5CF6','icon':'📚'},
     'oren': {'id':'oren','label':'Sukan / Riadah','color':'#F97316','icon':'⚽'},
+    'cuti': {'id':'cuti','label':'Cuti Umum / Sekolah','color':'#6B7280','icon':'🇲🇾'},
 }
 
 def get_db():
@@ -83,6 +84,15 @@ def init_db():
             db.execute("INSERT INTO chores (title,assigned_to,done,created_by) VALUES (?,?,?,?)",('Beli barang dapur',2,0,1))
             db.execute("INSERT INTO chores (title,assigned_to,done,created_by) VALUES (?,?,?,?)",('Basuh kereta',1,0,1))
         db.commit()
+
+        # Auto-import Malaysian holidays if not yet imported
+        has_holidays = db.execute("SELECT COUNT(*) AS c FROM events WHERE category='cuti'").fetchone()['c']
+        if has_holidays == 0:
+            try:
+                from holidays import run as import_holidays
+                import_holidays()
+            except Exception as e:
+                print(f"Holiday import skipped: {e}")
 
 # ===== AUTH HELPERS =====
 def token_required(f):
@@ -174,7 +184,7 @@ def get_events():
     return jsonify([{'id':e['id'],'title':e['title'],'start':e['start'],'end':e['end'],
         'description':e['description'],'color':e['color'],'category':e['category'],
         'userId':e['user_id'],'userName':e['user_name'],'userColor':e['user_color'],
-        'editable':e['user_id']==g.current_user['id']} for e in events])
+        'editable':(e['user_id']==g.current_user['id'] and e['category']!='cuti')} for e in events])
 
 @app.route('/api/events', methods=['POST'])
 @token_required
@@ -297,7 +307,7 @@ def delete_chore(cid):
 @app.route('/api/users', methods=['GET'])
 @token_required
 def get_users():
-    users = get_db().execute("SELECT id,username,full_name,color,is_admin,created_at FROM users ORDER BY id").fetchall()
+    users = get_db().execute("SELECT id,username,full_name,color,is_admin,created_at FROM users WHERE username!='_SYSTEM' ORDER BY id").fetchall()
     return jsonify([{'id':u['id'],'username':u['username'],'full_name':u['full_name'],
         'color':u['color'],'is_admin':bool(u['is_admin']),'created_at':u['created_at']} for u in users])
 
