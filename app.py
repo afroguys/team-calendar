@@ -300,6 +300,16 @@ def delete_birthday(bid):
     db.execute("DELETE FROM birthdays WHERE id=?",(bid,)); db.commit()
     return jsonify({'message':'Birthday dipadam'})
 
+@app.route('/api/birthdays/<int:bid>', methods=['PUT'])
+@token_required
+def update_birthday(bid):
+    db = get_db()
+    data = request.get_json()
+    db.execute("UPDATE birthdays SET name=?,date=?,note=? WHERE id=?",
+               (data.get('name'),data.get('date'),data.get('note',''),bid))
+    db.commit()
+    return jsonify({'message':'Birthday dikemaskini'})
+
 # ===== CHORES =====
 @app.route('/api/chores', methods=['GET'])
 @token_required
