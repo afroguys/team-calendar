@@ -36,6 +36,43 @@ def close_db(exception):
     db = getattr(g, '_database', None)
     if db is not None: db.close()
 
+# Auto-recovery: validate DB on every request
+@app.before_request
+def ensure_db():
+    """Auto-detect corrupted DB and re-initialize on the fly."""
+    import os as _os
+    try:
+        # Check if DB file exists and is valid
+        if not _os.path.exists(DB) or _os.path.getsize(DB) < 4096:
+            if _os.path.exists(DB):
+                backup_path = DB + '.corrupted_backup'
+                try: _os.rename(DB, backup_path)
+                except: pass
+            # Force re-init
+            db = getattr(g, '_database', None)
+            if db: db.close(); delattr(g, '_database')
+            init_db()
+            print("✅ DB auto-recovered — file missing/too small")
+            return
+        db = get_db()
+        db.execute("SELECT 1 FROM users LIMIT 1").fetchone()
+        db.execute("SELECT 1 FROM settings LIMIT 1").fetchone()
+        db.execute("SELECT 1 FROM events LIMIT 1").fetchone()
+    except sqlite3.OperationalError:
+        backup_path = DB + '.corrupted_backup'
+        try:
+            _os.rename(DB, backup_path)
+            print(f"⚠️ DB corrupted — backed up to {backup_path}")
+        except:
+            pass
+        db = getattr(g, '_database', None)
+        if db: db.close(); delattr(g, '_database')
+        init_db()
+        print("✅ DB auto-recovered — re-initialized successfully")
+    except sqlite3.DatabaseError:
+        msg = "Database is corrupted. Rename or delete the database file and reload this page."
+        return msg, 500, {'Content-Type': 'text/plain'}
+
 def init_db():
     with app.app_context():
         db = get_db()
