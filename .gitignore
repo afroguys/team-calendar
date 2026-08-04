@@ -1,3 +1,6 @@
 venv/
 calendar.db
+calendar.db.corrupted_backup
 __pycache__/
+static/uploads/*.png
+static/uploads/*.webp
