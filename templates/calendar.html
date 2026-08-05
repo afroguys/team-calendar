@@ -278,30 +278,103 @@ if(window.innerWidth<=900){
 async function api(url,opts){if(!opts)opts={};if(!opts.headers)opts.headers={};opts.headers['Authorization']='Bearer '+token;if(opts.body&&typeof opts.body==='object'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}return fetch(url,opts).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,data:d}})})}
 
 var calendar;
+// ===== BROWSER DETECTION (desktop vs mobile) =====
+function detectDevice(){
+  // Touch + small width = mobile; also detect tablet
+  var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  var w = window.innerWidth;
+  var isMobile = w <= 900;
+  var isTablet = w > 900 && w <= 1200 && isTouch;
+  return {isMobile:isMobile, isTablet:isTablet, width:w};
+}
+function getInitialView(dev){
+  if(dev.isMobile) return 'listMonth';
+  if(dev.isTablet) return 'timeGridWeek';
+  return 'dayGridMonth';
+}
+function getToolbarRight(dev){
+  if(dev.isMobile) return 'listMonth,dayGridMonth';
+  if(dev.isTablet) return 'dayGridMonth,timeGridWeek,listMonth';
+  return 'dayGridMonth,timeGridWeek,timeGridDay,multiMonthYear,listMonth';
+}
 document.addEventListener('DOMContentLoaded',function(){
   loadSettings();loadAll();
-  var isMobile=window.innerWidth<=900;
-  // View options macam template Full Event Calendar: Month/Week/Day/Year + List
-  var toolbarRight=isMobile?'listMonth,dayGridMonth':'dayGridMonth,timeGridWeek,timeGridDay,multiMonthYear,listMonth';
+  var dev=detectDevice();
+  var toolbarRight=getToolbarRight(dev);
   calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
-    initialView:isMobile?'listMonth':'dayGridMonth',
+    initialView:getInitialView(dev),
     headerToolbar:{left:'prev,next today',center:'title',right:toolbarRight},
     buttonText:{today:'Hari Ini',month:'Bulan',week:'Minggu',day:'Hari',listMonth:'Senarai',multiMonthYear:'Tahun'},
-    height:isMobile?'auto':'100%',locale:'ms',firstDay:1,selectable:true,editable:true,
+    height:dev.isMobile?'auto':'100%',locale:'ms',firstDay:1,selectable:true,editable:true,
     eventDurationEditable:false,events:fetchEvents,
     nowIndicator:true,
     select:function(info){openEventModal(null,info.startStr,info.endStr||info.startStr)},
     eventClick:function(info){if(info.event.extendedProps.category==='cuti'){toast(info.event.title,'success');return}openEventModal(info.event)},
     eventDrop:function(info){updateFromDrop(info.event)},
     eventResize:function(info){updateFromDrop(info.event)},
+    eventDidMount:function(info){addUserBadge(info.event, info.el)},
     eventClassNames:function(arg){return arg.event.extendedProps.category==='cuti'?['holiday-event']:[]}
   });
   calendar.render();renderCatGrid('biru');
+  // Auto-switch view bila resize cross breakpoint
+  var lastDevice=detectDevice().isMobile?'m':'d';
+  window.addEventListener('resize',function(){
+    var dev=detectDevice();
+    var cur=dev.isMobile?'m':'d';
+    if(cur!==lastDevice){
+      lastDevice=cur;
+      calendar.changeView(getInitialView(dev));
+      calendar.setOption('height',dev.isMobile?'auto':'100%');
+      // Auto-collapse/expand side sections
+      ['bdaySection','choreSection'].forEach(function(id){
+        var s=document.getElementById(id);
+        if(s){if(dev.isMobile){s.classList.add('collapsed')}else{s.classList.remove('collapsed')}}
+      });
+    }
+  });
 });
 
 async function loadSettings(){try{var r=await fetch('/api/settings').then(function(r){return r.json()});document.getElementById('familyName').textContent=r.family_name||'FAMILY CALENDAR';document.title=r.family_name||'Family Calendar';var theme=r.theme||'cyber';document.documentElement.setAttribute('data-theme',theme);var zone=r.zone||'B';if(calendar)calendar.setOption('firstDay',zone==='A'?0:1)}catch(e){}}
-function fetchEvents(info,success,fail){api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){if(r.ok){var evs=r.data;if(activeFilter!=='all')evs=evs.filter(function(e){return e.category===activeFilter});success(evs)}else fail()}).catch(fail)}
+function fetchEvents(info,success,fail){
+  api('/api/events?start='+info.startStr+'&end='+info.endStr).then(function(r){
+    if(r.ok){
+      var evs=r.data;
+      if(activeFilter!=='all')evs=evs.filter(function(e){return e.category===activeFilter});
+      // Warna event ikut COLOUR CODE USER — bukan kategori
+      evs.forEach(function(e){
+        if(e.category!=='cuti'&&e.userColor){
+          e.backgroundColor=e.userColor;
+          e.borderColor=e.userColor;
+          // Text putih kalau warna gelap, hitam kalau cerah
+          var c=e.userColor.replace('#','');
+          var br=parseInt(c.substring(0,2),16),bg=parseInt(c.substring(2,4),16),bb=parseInt(c.substring(4,6),16);
+          var lum=(br*299+bg*587+bb*114)/1000;
+          e.textColor=lum>150?'#0b0f19':'#ffffff';
+        }
+        e.extendedProps={description:e.description,userId:e.userId,userName:e.userName,userColor:e.userColor};
+      });
+      success(evs);
+    }else fail()
+  }).catch(fail)
+}
 function updateFromDrop(event){api('/api/events/'+event.id,{method:'PUT',body:{start:event.start.toISOString(),end:event.end?event.end.toISOString():event.start.toISOString()}}).then(function(r){if(!r.ok){calendar.refetchEvents();toast('GAGAL','error')}})}
+
+// Badge nama user pada event (dot + initial)
+function addUserBadge(event, el){
+  var uc=event.extendedProps.userColor;
+  var un=event.extendedProps.userName;
+  if(!uc||event.extendedProps.category==='cuti')return;
+  el=el||event.el;
+  if(!el)return;
+  // Skip jika badge dah ada
+  if(el.querySelector('.event-user-badge'))return;
+  var badge=document.createElement('span');
+  badge.className='event-user-badge';
+  badge.style.cssText='display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:'+uc+';color:#fff;font-size:.55rem;font-weight:800;margin-right:3px;vertical-align:middle;flex-shrink:0;border:1px solid rgba(255,255,255,.6)';
+  badge.textContent=(un||'?').charAt(0).toUpperCase();
+  var titleEl=el.querySelector('.fc-event-title');
+  if(titleEl){titleEl.prepend(badge)}else{el.prepend(badge)}
+}
 
 // Filter by category
 function setFilter(cat){
