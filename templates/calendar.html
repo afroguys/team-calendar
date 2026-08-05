@@ -37,7 +37,9 @@
     .btn-red{background:rgba(255,23,68,.15);color:var(--cyber-red);border-color:rgba(255,23,68,.25)}.btn-red:hover{background:rgba(255,23,68,.25)}
 
     .main-content{padding:6px;overflow-y:auto}
-    .side-panel{background:transparent;border-left:1px solid var(--cyber-border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+    .main-col{display:flex;flex-direction:column;min-width:0;min-height:0;grid-column:1;grid-row:2}
+    .main-col .main-content{flex:1;overflow-y:auto}
+    .side-panel{background:transparent;border-left:1px solid var(--cyber-border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;grid-column:2;grid-row:2}
 
     /* Glass side sections */
     .side-section{background:var(--cyber-glass);backdrop-filter:blur(var(--cyber-blur));-webkit-backdrop-filter:blur(var(--cyber-blur));
@@ -108,7 +110,7 @@
     .toast.show{transform:translateY(0);opacity:1}.toast-success{background:var(--cyber-neon)}.toast-error{background:var(--cyber-pink)}
 
     /* Filter bar */
-    .filter-bar{grid-column:1/-1;display:flex;align-items:center;gap:4px;padding:5px 12px;border-bottom:1px solid var(--cyber-border);overflow-x:auto;background:var(--cyber-glass);backdrop-filter:blur(6px);flex-wrap:nowrap}
+    .filter-bar{display:flex;align-items:center;gap:4px;padding:5px 12px;border-bottom:1px solid var(--cyber-border);overflow-x:auto;background:var(--cyber-glass);backdrop-filter:blur(6px);flex-wrap:nowrap;flex-shrink:0}
     .filter-label{font-size:.62rem;font-weight:700;color:var(--cyber-text3);letter-spacing:1px;white-space:nowrap;font-family:'Orbitron',sans-serif}
     .filter-chip{padding:3px 10px;border-radius:20px;border:1px solid var(--cyber-border2);background:var(--cyber-surface2);color:var(--cyber-text2);font-size:.66rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:'Inter',sans-serif}
     .filter-chip:hover{border-color:var(--cyber-neon);color:var(--cyber-neon)}
@@ -116,7 +118,8 @@
 
     @media(max-width:900px){
       .app-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding-bottom:58px}
-      .side-panel{flex-direction:column;gap:8px;padding:8px;max-height:none;overflow-y:visible;border-left:none;border-top:1px solid var(--cyber-border)}
+      .main-col{grid-column:1;grid-row:2}
+      .side-panel{flex-direction:column;gap:8px;padding:8px;max-height:none;overflow-y:visible;border-left:none;border-top:1px solid var(--cyber-border);grid-column:1;grid-row:3}
       .side-section{flex:1;min-width:100%}.category-grid{grid-template-columns:repeat(3,1fr)}
       /* Collapsible sections */
       .side-section h3{cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
@@ -181,17 +184,19 @@
       <button class="btn btn-out btn-sm" onclick="logout()">✕</button>
     </div>
   </div>
-  <div class="main-content" id="calendar"></div>
-  <div class="filter-bar" id="filterBar">
-    <span class="filter-label">⚡ FILTER:</span>
-    <button class="filter-chip active" onclick="setFilter('all')">Semua</button>
-    <button class="filter-chip" data-cat="merah" onclick="setFilter('merah')">🚨</button>
-    <button class="filter-chip" data-cat="hijau" onclick="setFilter('hijau')">✈️</button>
-    <button class="filter-chip" data-cat="kuning" onclick="setFilter('kuning')">🎂</button>
-    <button class="filter-chip" data-cat="biru" onclick="setFilter('biru')">📋</button>
-    <button class="filter-chip" data-cat="ungu" onclick="setFilter('ungu')">📚</button>
-    <button class="filter-chip" data-cat="oren" onclick="setFilter('oren')">⚽</button>
-    <button class="filter-chip" data-cat="cuti" onclick="setFilter('cuti')">🇲🇾</button>
+  <div class="main-col">
+    <div class="filter-bar" id="filterBar">
+      <span class="filter-label">⚡ FILTER:</span>
+      <button class="filter-chip active" onclick="setFilter('all')">Semua</button>
+      <button class="filter-chip" data-cat="merah" onclick="setFilter('merah')">🚨</button>
+      <button class="filter-chip" data-cat="hijau" onclick="setFilter('hijau')">✈️</button>
+      <button class="filter-chip" data-cat="kuning" onclick="setFilter('kuning')">🎂</button>
+      <button class="filter-chip" data-cat="biru" onclick="setFilter('biru')">📋</button>
+      <button class="filter-chip" data-cat="ungu" onclick="setFilter('ungu')">📚</button>
+      <button class="filter-chip" data-cat="oren" onclick="setFilter('oren')">⚽</button>
+      <button class="filter-chip" data-cat="cuti" onclick="setFilter('cuti')">🇲🇾</button>
+    </div>
+    <div class="main-content" id="calendar"></div>
   </div>
   <div class="side-panel">
     <div class="side-section" id="bdaySection"><h3 onclick="toggleSection('bdaySection')">◈ COUNTDOWN <span class="sec-arrow">▾</span></h3><div class="sec-body" id="bdayList"><span style="font-size:.7rem;color:var(--cyber-text3)">Loading...</span></div>
